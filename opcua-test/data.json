@@ -1,0 +1,1021 @@
+{
+  "source_workbook": "Process data from HYSYS_R01.xlsx",
+  "sheet": "Sheet1",
+  "tags": [
+    {
+      "identifier": "Stream/1/VaporFraction",
+      "asset": "Stream 1",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.914623083373177,
+      "source_cell": "D5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/LiquidFraction",
+      "asset": "Stream 1",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.08537691662682301,
+      "source_cell": "D6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/Temperature",
+      "asset": "Stream 1",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 0.569935999114648,
+      "source_cell": "D7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/Pressure",
+      "asset": "Stream 1",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.575,
+      "source_cell": "D8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/MassFlow",
+      "asset": "Stream 1",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2466.0,
+      "source_cell": "D9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/VolumeFlow",
+      "asset": "Stream 1",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 283.70525326906,
+      "source_cell": "D10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/1/Velocity",
+      "asset": "Stream 1",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 16.526356146951777,
+      "source_cell": "D18",
+      "fluid": "MR",
+      "inner_diameter_mm": 77.92
+    },
+    {
+      "identifier": "Stream/1/Density",
+      "asset": "Stream 1",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 8.69211962621394,
+      "source_cell": "D19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/VaporFraction",
+      "asset": "Stream 2",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "E5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/LiquidFraction",
+      "asset": "Stream 2",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "E6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/Temperature",
+      "asset": "Stream 2",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 20.3305525873789,
+      "source_cell": "E7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/Pressure",
+      "asset": "Stream 2",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.45,
+      "source_cell": "E8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/MassFlow",
+      "asset": "Stream 2",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2466.0,
+      "source_cell": "E9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/VolumeFlow",
+      "asset": "Stream 2",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 338.560897837951,
+      "source_cell": "E10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2/Velocity",
+      "asset": "Stream 2",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 7.28565102636369,
+      "source_cell": "E18",
+      "fluid": "MR",
+      "inner_diameter_mm": 128.2
+    },
+    {
+      "identifier": "Stream/2/Density",
+      "asset": "Stream 2",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 7.28377085406975,
+      "source_cell": "E19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/VaporFraction",
+      "asset": "Stream 2-1",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "F5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/LiquidFraction",
+      "asset": "Stream 2-1",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "F6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/Temperature",
+      "asset": "Stream 2-1",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 122.191571078402,
+      "source_cell": "F7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/Pressure",
+      "asset": "Stream 2-1",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 23.05,
+      "source_cell": "F8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/MassFlow",
+      "asset": "Stream 2-1",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2466.0,
+      "source_cell": "F9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/VolumeFlow",
+      "asset": "Stream 2-1",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 102.157962706052,
+      "source_cell": "F10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/2-1/Velocity",
+      "asset": "Stream 2-1",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 14.895921384435498,
+      "source_cell": "F18",
+      "fluid": "MR",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/2-1/Density",
+      "asset": "Stream 2-1",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 24.1390874942899,
+      "source_cell": "F19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/VaporFraction",
+      "asset": "Stream 3",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.920506698686454,
+      "source_cell": "G5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/LiquidFraction",
+      "asset": "Stream 3",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.07949330131354604,
+      "source_cell": "G6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/Temperature",
+      "asset": "Stream 3",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 40.0,
+      "source_cell": "G7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/Pressure",
+      "asset": "Stream 3",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.95,
+      "source_cell": "G8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/MassFlow",
+      "asset": "Stream 3",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2466.0,
+      "source_cell": "G9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/VolumeFlow",
+      "asset": "Stream 3",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 72.8955213151124,
+      "source_cell": "G10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/3/Velocity",
+      "asset": "Stream 3",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 2.729949885191609,
+      "source_cell": "G18",
+      "fluid": "MR",
+      "inner_diameter_mm": 97.18
+    },
+    {
+      "identifier": "Stream/3/Density",
+      "asset": "Stream 3",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 33.82923882717,
+      "source_cell": "G19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/VaporFraction",
+      "asset": "Stream 4",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "H5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/LiquidFraction",
+      "asset": "Stream 4",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "H6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/Temperature",
+      "asset": "Stream 4",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 40.0,
+      "source_cell": "H7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/Pressure",
+      "asset": "Stream 4",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.95,
+      "source_cell": "H8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/MassFlow",
+      "asset": "Stream 4",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2067.48682975749,
+      "source_cell": "H9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/VolumeFlow",
+      "asset": "Stream 4",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 72.1898499806196,
+      "source_cell": "H10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/4/Velocity",
+      "asset": "Stream 4",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 2.7035223716238823,
+      "source_cell": "H18",
+      "fluid": "MR",
+      "inner_diameter_mm": 97.18
+    },
+    {
+      "identifier": "Stream/4/Density",
+      "asset": "Stream 4",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 28.6395778674223,
+      "source_cell": "H19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/VaporFraction",
+      "asset": "Stream 5",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.914779860867123,
+      "source_cell": "I5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/LiquidFraction",
+      "asset": "Stream 5",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.08522013913287696,
+      "source_cell": "I6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/Temperature",
+      "asset": "Stream 5",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 4.0,
+      "source_cell": "I7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/Pressure",
+      "asset": "Stream 5",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.825,
+      "source_cell": "I8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/MassFlow",
+      "asset": "Stream 5",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2067.48682975749,
+      "source_cell": "I9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/VolumeFlow",
+      "asset": "Stream 5",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 58.8891952609205,
+      "source_cell": "I10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/5/Velocity",
+      "asset": "Stream 5",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 2.2054105511726014,
+      "source_cell": "I18",
+      "fluid": "MR",
+      "inner_diameter_mm": 97.18
+    },
+    {
+      "identifier": "Stream/5/Density",
+      "asset": "Stream 5",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 35.1080842690593,
+      "source_cell": "I19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/VaporFraction",
+      "asset": "Stream 6",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "J5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/LiquidFraction",
+      "asset": "Stream 6",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "J6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/Temperature",
+      "asset": "Stream 6",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": -163.033727922522,
+      "source_cell": "J7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/Pressure",
+      "asset": "Stream 6",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.7,
+      "source_cell": "J8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/MassFlow",
+      "asset": "Stream 6",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2067.48682975749,
+      "source_cell": "J9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/VolumeFlow",
+      "asset": "Stream 6",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 3.30119142652881,
+      "source_cell": "J10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/6/Velocity",
+      "asset": "Stream 6",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 0.4813554094264691,
+      "source_cell": "J18",
+      "fluid": "MR",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/6/Density",
+      "asset": "Stream 6",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 626.284966865123,
+      "source_cell": "J19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/VaporFraction",
+      "asset": "Stream 7",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.14415656398536,
+      "source_cell": "K5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/LiquidFraction",
+      "asset": "Stream 7",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.85584343601464,
+      "source_cell": "K6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/Temperature",
+      "asset": "Stream 7",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": -172.0,
+      "source_cell": "K7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/Pressure",
+      "asset": "Stream 7",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.7,
+      "source_cell": "K8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/MassFlow",
+      "asset": "Stream 7",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2067.48682975749,
+      "source_cell": "K9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/VolumeFlow",
+      "asset": "Stream 7",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 16.1842962888748,
+      "source_cell": "K10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/7/Velocity",
+      "asset": "Stream 7",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 2.3598748330090595,
+      "source_cell": "K18",
+      "fluid": "MR",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/7/Density",
+      "asset": "Stream 7",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 127.746476760862,
+      "source_cell": "K19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/VaporFraction",
+      "asset": "Stream 8",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.971680170711126,
+      "source_cell": "L5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/LiquidFraction",
+      "asset": "Stream 8",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.028319829288874,
+      "source_cell": "L6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/Temperature",
+      "asset": "Stream 8",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": -2.92026431030627,
+      "source_cell": "L7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/Pressure",
+      "asset": "Stream 8",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.575,
+      "source_cell": "L8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/MassFlow",
+      "asset": "Stream 8",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 2067.48682992438,
+      "source_cell": "L9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/VolumeFlow",
+      "asset": "Stream 8",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 273.501259682016,
+      "source_cell": "L10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/8/Velocity",
+      "asset": "Stream 8",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 10.242669494619399,
+      "source_cell": "L18",
+      "fluid": "MR",
+      "inner_diameter_mm": 97.18
+    },
+    {
+      "identifier": "Stream/8/Density",
+      "asset": "Stream 8",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 7.55933202036482,
+      "source_cell": "L19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/VaporFraction",
+      "asset": "Stream 9",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "M5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/LiquidFraction",
+      "asset": "Stream 9",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "M6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/Temperature",
+      "asset": "Stream 9",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 40.0,
+      "source_cell": "M7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/Pressure",
+      "asset": "Stream 9",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.95,
+      "source_cell": "M8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/MassFlow",
+      "asset": "Stream 9",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 398.513170075624,
+      "source_cell": "M9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/VolumeFlow",
+      "asset": "Stream 9",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 0.705671334492833,
+      "source_cell": "M10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/9/Velocity",
+      "asset": "Stream 9",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 0.10289579435037227,
+      "source_cell": "M18",
+      "fluid": "MR",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/9/Density",
+      "asset": "Stream 9",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 564.729145986972,
+      "source_cell": "M19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/VaporFraction",
+      "asset": "Stream 10",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.157169130351887,
+      "source_cell": "N5",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/LiquidFraction",
+      "asset": "Stream 10",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 0.842830869648113,
+      "source_cell": "N6",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/Temperature",
+      "asset": "Stream 10",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 30.9113159538676,
+      "source_cell": "N7",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/Pressure",
+      "asset": "Stream 10",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.575,
+      "source_cell": "N8",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/MassFlow",
+      "asset": "Stream 10",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 398.513170075624,
+      "source_cell": "N9",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/VolumeFlow",
+      "asset": "Stream 10",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 4.80560576930227,
+      "source_cell": "N10",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/10/Velocity",
+      "asset": "Stream 10",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 0.7007180238127001,
+      "source_cell": "N18",
+      "fluid": "MR",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/10/Density",
+      "asset": "Stream 10",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 82.9267295751329,
+      "source_cell": "N19",
+      "fluid": "MR"
+    },
+    {
+      "identifier": "Stream/11/VaporFraction",
+      "asset": "Stream 11",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "O5",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/LiquidFraction",
+      "asset": "Stream 11",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "O6",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/Temperature",
+      "asset": "Stream 11",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": -151.0,
+      "source_cell": "O7",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/Pressure",
+      "asset": "Stream 11",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 5.0,
+      "source_cell": "O8",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/MassFlow",
+      "asset": "Stream 11",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 1405.0,
+      "source_cell": "O9",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/VolumeFlow",
+      "asset": "Stream 11",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 3.24122591478291,
+      "source_cell": "O10",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/11/Velocity",
+      "asset": "Stream 11",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 0.47261168035157974,
+      "source_cell": "O18",
+      "fluid": "LNG",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/11/Density",
+      "asset": "Stream 11",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 433.477960790062,
+      "source_cell": "O19",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/VaporFraction",
+      "asset": "Stream 12",
+      "metric": "VaporFraction",
+      "unit": "fraction",
+      "baseline": 0.0,
+      "source_cell": "P5",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/LiquidFraction",
+      "asset": "Stream 12",
+      "metric": "LiquidFraction",
+      "unit": "fraction",
+      "baseline": 1.0,
+      "source_cell": "P6",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/Temperature",
+      "asset": "Stream 12",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": -169.999997789379,
+      "source_cell": "P7",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/Pressure",
+      "asset": "Stream 12",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.5,
+      "source_cell": "P8",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/MassFlow",
+      "asset": "Stream 12",
+      "metric": "MassFlow",
+      "unit": "kg/hr",
+      "baseline": 1405.0,
+      "source_cell": "P9",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/VolumeFlow",
+      "asset": "Stream 12",
+      "metric": "VolumeFlow",
+      "unit": "m3/hr",
+      "baseline": 3.05501868569763,
+      "source_cell": "P10",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Stream/12/Velocity",
+      "asset": "Stream 12",
+      "metric": "Velocity",
+      "unit": "m/s",
+      "baseline": 0.44546031424956584,
+      "source_cell": "P18",
+      "fluid": "LNG",
+      "inner_diameter_mm": 49.25
+    },
+    {
+      "identifier": "Stream/12/Density",
+      "asset": "Stream 12",
+      "metric": "Density",
+      "unit": "kg/m3",
+      "baseline": 459.898987386769,
+      "source_cell": "P19",
+      "fluid": "LNG"
+    },
+    {
+      "identifier": "Equipment/V-102/LevelPct",
+      "asset": "V-102",
+      "metric": "LevelPct",
+      "unit": "%",
+      "baseline": 20.0,
+      "source_cell": "C29"
+    },
+    {
+      "identifier": "Equipment/V-102/LevelM",
+      "asset": "V-102",
+      "metric": "LevelM",
+      "unit": "m",
+      "baseline": 0.44000000000000006,
+      "source_cell": "C30",
+      "height_m": 2.2
+    },
+    {
+      "identifier": "Equipment/V-102/Pressure",
+      "asset": "V-102",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 22.95,
+      "source_cell": "C31"
+    },
+    {
+      "identifier": "Equipment/V-102/Temperature",
+      "asset": "V-102",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 40.0,
+      "source_cell": "C32"
+    },
+    {
+      "identifier": "Equipment/Receiver_UNASSIGNED/LevelPct",
+      "asset": "Receiver_UNASSIGNED",
+      "metric": "LevelPct",
+      "unit": "%",
+      "baseline": 15.0,
+      "source_cell": "D29"
+    },
+    {
+      "identifier": "Equipment/Receiver_UNASSIGNED/LevelM",
+      "asset": "Receiver_UNASSIGNED",
+      "metric": "LevelM",
+      "unit": "m",
+      "baseline": 0.24,
+      "source_cell": "D30",
+      "height_m": 1.6
+    },
+    {
+      "identifier": "Equipment/Receiver_UNASSIGNED/Pressure",
+      "asset": "Receiver_UNASSIGNED",
+      "metric": "Pressure",
+      "unit": "barG",
+      "baseline": 4.45,
+      "source_cell": "D31"
+    },
+    {
+      "identifier": "Equipment/Receiver_UNASSIGNED/Temperature",
+      "asset": "Receiver_UNASSIGNED",
+      "metric": "Temperature",
+      "unit": "degC",
+      "baseline": 20.33,
+      "source_cell": "D32"
+    }
+  ]
+}
