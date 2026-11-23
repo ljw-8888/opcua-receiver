@@ -166,7 +166,7 @@ $python = ".\.venv\Scripts\python.exe"
 
 ### Ubuntu · 터미널
 
-Python 3.12와 해당 버전의 `venv` 모듈, `unzip`이 필요하다. 두 파일을 받은 폴더에서 압축을 푼다.
+Python 3.12와 해당 버전의 `venv` 모듈, `unzip`이 필요하다. 최소 설치 환경에서 실행 시 `libEGL.so.1` 오류가 뜨면 `sudo apt install libegl1`로 Qt에 필요한 라이브러리를 설치한다. 두 파일을 받은 폴더에서 압축을 푼다.
 
 ```bash
 unzip opcua-receiver-0.1.2-source.zip

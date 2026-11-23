@@ -16,12 +16,17 @@ jobs:
         shell: bash
         working-directory: opcua-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: 917f80b3dac754cad1831d0bee770b9cd3dd2258
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Install Qt runtime on Ubuntu runner
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libegl1
       - name: Prepare modified library
         run: |
           curl --fail --silent --show-error --location -o asyncua-2.1.0.tar.gz https://files.pythonhosted.org/packages/c6/90/13c47fa62aa83f2ed98a931aa3a7bcc77a3e7163400eb9f2d9e1d3c9df07/asyncua-2.1.0.tar.gz
