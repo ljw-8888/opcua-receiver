@@ -1,0 +1,7 @@
+The hd.opcua.receiver Kit extension includes asyncua 2.1.0, distributed under the GNU Lesser General Public License, version 3 or later. Its authors' notices and package metadata are included in the platform bundles. The license texts accompany this file.
+
+Project: https://github.com/FreeOpcUa/opcua-asyncio
+Source: https://pypi.org/project/asyncua/2.1.0/#files
+Source distribution SHA-256: d741f5e21f189ac0a45b8dda13539c2d49d8d992b9b62d2758efe1bfd3d1454c
+
+Recipients may modify and replace the library, including reverse engineering for debugging those modifications. The extension's docs/README.md describes rebuilding and replacing its bundles with kit-tools/package_extension.py in the receiver repository.

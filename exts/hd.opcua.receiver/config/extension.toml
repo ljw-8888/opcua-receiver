@@ -1,0 +1,19 @@
+[package]
+title = "OPC UA Receiver"
+description = "Browse OPC UA servers, select telemetry tags and save live values to Excel."
+version = "0.2.0"
+category = "Visualization"
+readme = "docs/README.md"
+repository = "https://github.com/ljw-8888/opcua-receiver"
+
+[dependencies]
+"omni.ui" = {}
+"omni.kit.window.filepicker" = {}
+"omni.kit.menu.utils" = {}
+
+[[python.module]]
+name = "hd_opcua_receiver"
+
+[settings.app.font]
+customRegionFiles = ["${hd.opcua.receiver}/data/hangul.txt"]
+customFontPath = "${hd.opcua.receiver}/data/NotoSansCJK-Regular.ttc"

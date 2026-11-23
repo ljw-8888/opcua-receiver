@@ -28,3 +28,9 @@
 !/opcua-test/opcua-handoff.md
 !/opcua-test/receive_tag.py
 !/opcua-test/sample-pressure.xlsx
+
+!/exts/
+!/kit-tests/
+!/kit-tools/
+__pycache__/
+*.pyc
