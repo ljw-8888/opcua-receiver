@@ -1,4 +1,4 @@
-name: Rebuild v0.1.2 with modified asyncua
+name: Receiver build (v0.1.2)
 on: workflow_dispatch
 permissions:
   contents: read
@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libegl1
-      - name: Prepare modified library
+      - name: Prepare asyncua source
         run: |
           curl --fail --silent --show-error --location -o asyncua-2.1.0.tar.gz https://files.pythonhosted.org/packages/c6/90/13c47fa62aa83f2ed98a931aa3a7bcc77a3e7163400eb9f2d9e1d3c9df07/asyncua-2.1.0.tar.gz
           echo 'd741f5e21f189ac0a45b8dda13539c2d49d8d992b9b62d2758efe1bfd3d1454c  asyncua-2.1.0.tar.gz' | sha256sum -c -
@@ -47,7 +47,7 @@ jobs:
           python -m pip install --force-reinstall --no-deps ./asyncua-2.1.0
           python -m pip check
           python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
-      - name: Run the executable and check the modified library
+      - name: Verify bundled asyncua
         shell: python
         env:
           OPCUA_REBUILD_PROBE: '1'

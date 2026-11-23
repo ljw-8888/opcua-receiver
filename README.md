@@ -6,8 +6,6 @@ OPC UA 서버에서 필요한 태그를 골라 최신값을 Excel에 저장한�
 
 Windows와 Ubuntu 모두 Python을 따로 설치할 필요가 없다.
 
-두 실행 파일에는 LGPL v3 이상으로 배포되는 `asyncua 2.1.0`이 포함되어 있다. [라이선스 고지와 전문](licenses/) · [v0.1.2 실행 파일과 소스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2) · [수정한 asyncua로 빌드](#asyncua-rebuild)
-
 ### Windows x64
 
 [OPCUA-Receiver.exe](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver.exe)를 내려받아 더블클릭한다.
@@ -138,7 +136,7 @@ tar -czf ../dist/OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C ../dist OPCUA-Receiver -
 
 <a id="asyncua-rebuild"></a>
 
-## 수정한 asyncua로 수신기 빌드하기
+## 릴리스 소스로 빌드하기
 
 [v0.1.2 릴리스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2)에서 `opcua-receiver-0.1.2-source.zip`과 `asyncua-2.1.0.tar.gz`를 내려받아 빈 폴더에 둔다. 첫 파일에는 배포한 수신기 소스와 PyInstaller 설정이, 두 번째 파일에는 통신 라이브러리 소스가 들어 있다. 빌드할 운영체제에 Python 3.12(x64)가 필요하다.
 
@@ -151,7 +149,7 @@ Expand-Archive .\opcua-receiver-0.1.2-source.zip -DestinationPath .
 tar -xzf .\asyncua-2.1.0.tar.gz
 ```
 
-`asyncua-2.1.0\asyncua` 안에서 필요한 코드를 수정한 뒤, 같은 창에서 아래 명령을 실행한다. 기본 의존성을 먼저 설치하고, 방금 수정한 로컬 사본으로 `asyncua`를 교체한다.
+같은 PowerShell 창에서 실행한다. 빌드에는 압축을 푼 `asyncua-2.1.0\asyncua` 폴더의 코드가 들어간다.
 
 ```powershell
 cd .\opcua-receiver-0.1.2\opcua-test
@@ -173,7 +171,7 @@ unzip opcua-receiver-0.1.2-source.zip
 tar -xzf asyncua-2.1.0.tar.gz
 ```
 
-`asyncua-2.1.0/asyncua` 안에서 필요한 코드를 수정한 뒤, 같은 터미널에서 빌드한다.
+같은 터미널에서 실행한다. 빌드에는 압축을 푼 `asyncua-2.1.0/asyncua` 폴더의 코드가 들어간다.
 
 ```bash
 cd opcua-receiver-0.1.2/opcua-test
@@ -185,4 +183,8 @@ python3.12 -m venv .venv
 ../dist/OPCUA-Receiver
 ```
 
-두 환경 모두 라이브러리를 다시 수정하면 로컬 사본을 설치하는 `--force-reinstall` 줄부터 반복한다. 라이브러리 의존성까지 변경했다면 변경한 의존성도 가상환경에 설치한다.
+라이브러리 코드를 편집한 뒤에는 `--force-reinstall` 줄부터 다시 실행한다. 의존성을 추가했다면 해당 패키지도 가상환경에 설치한다.
+
+## 라이선스
+
+Windows와 Ubuntu 배포본에 포함된 `asyncua 2.1.0`에는 GNU LGPL v3 이상이 적용된다. [사용 고지](licenses/asyncua-NOTICE.txt) · [LGPL v3 전문](licenses/LGPL-3.0.txt) · [GPL v3 전문](licenses/GPL-3.0.txt)
