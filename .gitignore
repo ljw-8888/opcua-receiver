@@ -3,6 +3,8 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/licenses/
+!/.github/
 !/opcua-test/
 /opcua-test/*
 !/opcua-test/receiver_gui.py

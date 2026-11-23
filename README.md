@@ -6,6 +6,8 @@ OPC UA 서버에서 필요한 태그를 골라 최신값을 Excel에 저장한�
 
 Windows와 Ubuntu 모두 Python을 따로 설치할 필요가 없다.
 
+두 실행 파일에는 LGPL v3 이상으로 배포되는 `asyncua 2.1.0`이 포함되어 있다. [라이선스 고지와 전문](licenses/) · [v0.1.2 실행 파일과 소스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2) · [수정한 asyncua로 빌드](#asyncua-rebuild)
+
 ### Windows x64
 
 [OPCUA-Receiver.exe](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver.exe)를 내려받아 더블클릭한다.
@@ -133,3 +135,54 @@ tar -czf ../dist/OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C ../dist OPCUA-Receiver -
 ```
 
 아이콘 원본을 바꿨다면 빌드 전에 `python icons/build_icon.py`를 실행한다. 두 배포본에는 시험 태그와 HYSYS 기준값을 담은 `data.json`이 포함된다. [GitHub Releases](https://github.com/ljw-8888/opcua-receiver/releases)
+
+<a id="asyncua-rebuild"></a>
+
+## 수정한 asyncua로 수신기 빌드하기
+
+[v0.1.2 릴리스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2)에서 `opcua-receiver-0.1.2-source.zip`과 `asyncua-2.1.0.tar.gz`를 내려받아 빈 폴더에 둔다. 첫 파일에는 배포한 수신기 소스와 PyInstaller 설정이, 두 번째 파일에는 통신 라이브러리 소스가 들어 있다. 빌드할 운영체제에 Python 3.12(x64)가 필요하다.
+
+### Windows · PowerShell
+
+두 파일을 받은 폴더에서 PowerShell을 열고 압축을 푼다.
+
+```powershell
+Expand-Archive .\opcua-receiver-0.1.2-source.zip -DestinationPath .
+tar -xzf .\asyncua-2.1.0.tar.gz
+```
+
+`asyncua-2.1.0\asyncua` 안에서 필요한 코드를 수정한 뒤, 같은 창에서 아래 명령을 실행한다. 기본 의존성을 먼저 설치하고, 방금 수정한 로컬 사본으로 `asyncua`를 교체한다.
+
+```powershell
+cd .\opcua-receiver-0.1.2\opcua-test
+py -3.12 -m venv .venv
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -r requirements-receiver.txt PyInstaller==6.22.3
+& $python -m pip install --force-reinstall --no-deps ..\..\asyncua-2.1.0
+& $python -m pip check
+& $python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
+..\dist\OPCUA-Receiver.exe
+```
+
+### Ubuntu · 터미널
+
+Python 3.12와 해당 버전의 `venv` 모듈, `unzip`이 필요하다. 두 파일을 받은 폴더에서 압축을 푼다.
+
+```bash
+unzip opcua-receiver-0.1.2-source.zip
+tar -xzf asyncua-2.1.0.tar.gz
+```
+
+`asyncua-2.1.0/asyncua` 안에서 필요한 코드를 수정한 뒤, 같은 터미널에서 빌드한다.
+
+```bash
+cd opcua-receiver-0.1.2/opcua-test
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-receiver.txt PyInstaller==6.22.3
+.venv/bin/python -m pip install --force-reinstall --no-deps ../../asyncua-2.1.0
+.venv/bin/python -m pip check
+.venv/bin/python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
+../dist/OPCUA-Receiver
+```
+
+두 환경 모두 라이브러리를 다시 수정하면 로컬 사본을 설치하는 `--force-reinstall` 줄부터 반복한다. 라이브러리 의존성까지 변경했다면 변경한 의존성도 가상환경에 설치한다.

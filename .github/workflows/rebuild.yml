@@ -1,0 +1,56 @@
+name: Rebuild v0.1.2 with modified asyncua
+on: workflow_dispatch
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: opcua-test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 917f80b3dac754cad1831d0bee770b9cd3dd2258
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare modified library
+        run: |
+          curl --fail --silent --show-error --location -o asyncua-2.1.0.tar.gz https://files.pythonhosted.org/packages/c6/90/13c47fa62aa83f2ed98a931aa3a7bcc77a3e7163400eb9f2d9e1d3c9df07/asyncua-2.1.0.tar.gz
+          echo 'd741f5e21f189ac0a45b8dda13539c2d49d8d992b9b62d2758efe1bfd3d1454c  asyncua-2.1.0.tar.gz' | sha256sum -c -
+          tar -xzf asyncua-2.1.0.tar.gz
+          cat >> asyncua-2.1.0/asyncua/__init__.py <<'PY'
+
+          # Only the test build writes this file when the packaged receiver starts.
+          import os
+          if os.getenv("OPCUA_REBUILD_PROBE") == "1":
+              from pathlib import Path
+              Path("rebuild-probe.txt").write_text("modified asyncua loaded", encoding="utf-8")
+              raise SystemExit(0)
+          PY
+      - name: Install and build
+        run: |
+          python -m pip install -r requirements-receiver.txt PyInstaller==6.22.3
+          python -m pip install --force-reinstall --no-deps ./asyncua-2.1.0
+          python -m pip check
+          python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
+      - name: Run the executable and check the modified library
+        shell: python
+        env:
+          OPCUA_REBUILD_PROBE: '1'
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          import os
+          from pathlib import Path
+          import subprocess
+          exe = "OPCUA-Receiver.exe" if os.name == "nt" else "OPCUA-Receiver"
+          subprocess.run([str(Path("../dist", exe).resolve())], check=True, timeout=90)
+          assert Path("rebuild-probe.txt").read_text(encoding="utf-8") == "modified asyncua loaded"
