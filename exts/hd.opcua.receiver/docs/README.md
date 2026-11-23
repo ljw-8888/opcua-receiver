@@ -47,5 +47,3 @@ for row in get_latest_samples():
 ## 패키지 유지보수
 
 저장소 루트에서 `python3 kit-tools/package_extension.py`를 실행하면 등록용 폴더 구조를 담은 ZIP이 `dist`에 생성된다. Linux x86-64 및 Python 3.12 환경에서 `--rebuild-bundles`를 추가하면 고정한 버전의 Linux·Windows 의존성도 다시 만든다. 대체 wheel을 사용하려면 `--wheelhouse <폴더>`를 지정한다. 각 번들의 배포 메타데이터와 라이선스, `licenses/` 및 `data/FONT-LICENSE.txt`를 함께 전달한다.
-
-자동 통합 검증은 별도의 시험용 Kit 프로세스에서 실행한다. 위 실행 인자에 `--exec /absolute/path/to/kit-tests/smoke.py`를 추가하면 로컬 시험 서버의 탐색·선택·구독·저장·복원을 검증한다. 검증이 끝나면 해당 Kit 프로세스가 종료된다.

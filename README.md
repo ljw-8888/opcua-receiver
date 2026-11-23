@@ -4,25 +4,17 @@ OPC UA 서버에 연결하면 수신 가능한 태그를 찾아 트리와 표로
 
 | 사용 환경 | 시작 방법 |
 |---|---|
-| Windows x64 데스크톱 | [Windows 실행 파일](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver.exe)을 내려받아 실행한다. |
-| Ubuntu x86-64 데스크톱 | [Ubuntu 배포 파일](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)을 내려받아 아래 명령으로 압축을 푼다. |
-| Omniverse USD Composer 또는 다른 GUI Kit 앱 | 이 저장소의 `exts`를 등록하고 **OPC UA Receiver**를 켠다. [확장 설치 및 사용 가이드](exts/hd.opcua.receiver/docs/README.md) |
+| [1. Windows x64 데스크톱](#windows-데스크톱-실행) | 실행 파일(`.exe`)을 내려받아 실행한다. |
+| [2. Ubuntu x86-64 데스크톱](#ubuntu-데스크톱-실행) | 배포 파일(`.tar.gz`)의 압축을 풀고 실행한다. |
+| [3. Omniverse USD Composer 또는 다른 GUI Kit 앱](#omniverse-kit에서-시작하기) | 저장소의 `exts` 폴더를 등록하고 **OPC UA Receiver** 확장을 켠다. |
 
-## Omniverse Kit에서 시작하기
+## Windows 데스크톱 실행
 
-Python 3.12를 내장한 Windows·Linux x86-64 GUI Kit 앱용 확장이다. Ubuntu에서는 Kit 110.4.1에서 실행을 검증했다. Windows용 의존성도 포함하며 Windows Kit에서의 실행은 아직 검증 전이다.
-
-1. `git clone https://github.com/ljw-8888/opcua-receiver.git`을 실행하거나 GitHub의 **Code → Download ZIP**으로 받아 압축을 푼다.
-2. Kit의 **Window → Extensions**에서 확장 검색 경로에 내려받은 저장소의 `exts` 폴더를 추가한다. 검색 경로 바로 아래에 `hd.opcua.receiver` 폴더가 보여야 한다.
-3. **OPC UA Receiver**를 검색해 활성화한다. 자동으로 열린 설정 창에서 서버 주소를 입력하고 **연결**을 누른다. 다음 실행에도 창을 띄우려면 **Autoload**를 켠다. 닫은 창은 **Window → OPC UA Settings**에서 다시 연다.
-4. 왼쪽에서 서버 그룹을 펼치고 오른쪽에서 받을 태그를 체크한다. 이름이나 NodeId로 검색한 뒤 **전체 선택**을 누르면 현재 그룹의 검색 결과를 모든 페이지에 걸쳐 선택한다. **수신만 시작**을 누르면 빈 스테이지에서도 실시간 값이 표시된다.
-5. Excel에도 저장하려면 결과 파일(`.xlsx`)과 저장 주기를 지정하고 **수신·저장 시작**을 누른다. **Excel 저장 중지**를 누르면 화면 수신은 계속된다.
-
-다른 Kit 앱에 설정 버튼을 붙일 때는 `show_settings()`로 창을 열고, `get_latest_samples()`로 3D 표시에 사용할 최신값을 읽을 수 있다. [버튼 및 수신값 연동 예제](exts/hd.opcua.receiver/docs/README.md#기본-gui-버튼-및-3d-표시와-연결)
+Windows x64에서 `OPCUA-Receiver.exe`를 내려받아 더블클릭한다. 실행에 필요한 Python은 배포본에 포함돼 있다. [Windows 실행 파일 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver.exe)
 
 ## Ubuntu 데스크톱 실행
 
-배포 파일을 내려받은 폴더에서 터미널을 연다. Windows와 Ubuntu 데스크톱 배포본에는 Python이 포함돼 있다.
+Ubuntu x86-64용 배포 파일에도 Python이 포함돼 있다. 파일을 내려받은 폴더에서 터미널을 열고 아래 명령을 실행한다. [Ubuntu 배포 파일 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)
 
 ```bash
 mkdir -p opcua-receiver-app
@@ -32,6 +24,18 @@ cd opcua-receiver-app
 ```
 
 앱 메뉴에 등록하려면 같은 폴더에서 `bash install-launcher.sh`를 실행한다.
+
+## Omniverse Kit에서 시작하기
+
+Python 3.12를 내장한 Windows·Linux x86-64 GUI Kit 앱용 확장이다. Ubuntu에서는 Kit 110.4.1에서 실행을 검증했다. Windows용 의존성도 포함하며 Windows Kit에서의 실행은 아직 검증 전이다. [확장 설치 및 사용 가이드](exts/hd.opcua.receiver/docs/README.md)
+
+1. `git clone https://github.com/ljw-8888/opcua-receiver.git`을 실행하거나 GitHub의 **Code → Download ZIP**으로 받아 압축을 푼다.
+2. Kit의 **Window → Extensions**에서 확장 검색 경로에 내려받은 저장소의 `exts` 폴더를 추가한다. 검색 경로 바로 아래에 `hd.opcua.receiver` 폴더가 보여야 한다.
+3. **OPC UA Receiver**를 검색해 활성화한다. 자동으로 열린 설정 창에서 서버 주소를 입력하고 **연결**을 누른다. 다음 실행에도 창을 띄우려면 **Autoload**를 켠다. 닫은 창은 **Window → OPC UA Settings**에서 다시 연다.
+4. 왼쪽에서 서버 그룹을 펼치고 오른쪽에서 받을 태그를 체크한다. 이름이나 NodeId로 검색한 뒤 **전체 선택**을 누르면 현재 그룹의 검색 결과를 모든 페이지에 걸쳐 선택한다. **수신만 시작**을 누르면 빈 스테이지에서도 실시간 값이 표시된다.
+5. Excel에도 저장하려면 결과 파일(`.xlsx`)과 저장 주기를 지정하고 **수신·저장 시작**을 누른다. **Excel 저장 중지**를 누르면 화면 수신은 계속된다.
+
+다른 Kit 앱에 설정 버튼을 붙일 때는 `show_settings()`로 창을 열고, `get_latest_samples()`로 3D 표시에 사용할 최신값을 읽을 수 있다. [버튼 및 수신값 연동 예제](exts/hd.opcua.receiver/docs/README.md#기본-gui-버튼-및-3d-표시와-연결)
 
 ## 시험 서버 접속
 

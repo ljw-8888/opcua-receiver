@@ -30,7 +30,6 @@
 !/opcua-test/sample-pressure.xlsx
 
 !/exts/
-!/kit-tests/
 !/kit-tools/
 __pycache__/
 *.pyc
