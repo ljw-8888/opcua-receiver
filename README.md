@@ -116,74 +116,69 @@ Claude나 Codex에서 확인하려면 복제한 `opcua-receiver` 폴더를 열�
 
 > README.md와 opcua-test/opcua-handoff.md를 읽고, 내 운영체제에서 receive_tag.py로 시험 서버의 Stream/1/Pressure를 한 번 받는 명령을 알려줘.
 
-## 테스트와 빌드
-
-`opcua-test` 폴더에서 가상환경을 활성화한다. Windows PowerShell에서는 `.\.venv\Scripts\Activate.ps1`, Ubuntu에서는 `source .venv/bin/activate`를 실행한다.
-
-```sh
-python -m unittest test_core test_receiver_gui
-python -m pip install PyInstaller==6.22.3
-python -m PyInstaller --noconfirm --distpath ../dist --workpath ../build receiver.spec
-```
-
-실행 파일은 Windows에서 `dist/OPCUA-Receiver.exe`, Ubuntu에서 `dist/OPCUA-Receiver`로 만들어진다. Ubuntu 배포용 압축 파일은 아래 명령으로 만든다.
-
-```bash
-tar -czf ../dist/OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C ../dist OPCUA-Receiver -C ../opcua-test install-launcher.sh icons/opcua-receiver.svg
-```
-
-아이콘 원본을 바꿨다면 빌드 전에 `python icons/build_icon.py`를 실행한다. 두 배포본에는 시험 태그와 HYSYS 기준값을 담은 `data.json`이 포함된다. [GitHub Releases](https://github.com/ljw-8888/opcua-receiver/releases)
-
 <a id="asyncua-rebuild"></a>
+<a id="테스트와-빌드"></a>
 
-## 릴리스 소스로 빌드하기
+## 빌드
 
-[v0.1.2 릴리스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2)에서 `opcua-receiver-0.1.2-source.zip`과 `asyncua-2.1.0.tar.gz`를 내려받아 빈 폴더에 둔다. 첫 파일에는 배포한 수신기 소스와 PyInstaller 설정이, 두 번째 파일에는 통신 라이브러리 소스가 들어 있다. 빌드할 운영체제에 Python 3.12(x64)가 필요하다.
+Python 3.12(x64)가 필요하다. Git으로 복제한 저장소나 [v0.1.2 릴리스](https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2)의 `opcua-receiver-0.1.2-source.zip`을 푼 폴더에서 `opcua-test`로 들어간다.
+
+두 배포본에는 시험 태그와 HYSYS 기준값을 담은 `data.json`이 포함된다. 아이콘 원본을 바꿨다면 빌드 전에 가상환경에서 `python icons/build_icon.py`를 실행한다.
+
+기본 빌드는 PyPI의 `asyncua 2.1.0`을 사용한다. 로컬 소스를 사용하려면 릴리스의 `asyncua-2.1.0.tar.gz`를 **수신기 프로젝트 폴더와 같은 상위 폴더**에 풀어 둔다. 아래 명령에서 `../../asyncua-2.1.0`은 그 소스 폴더를 가리킨다.
 
 ### Windows · PowerShell
 
-두 파일을 받은 폴더에서 PowerShell을 열고 압축을 푼다.
+`opcua-test`에서 빌드 환경을 준비한다.
 
 ```powershell
-Expand-Archive .\opcua-receiver-0.1.2-source.zip -DestinationPath .
-tar -xzf .\asyncua-2.1.0.tar.gz
-```
-
-같은 PowerShell 창에서 실행한다. 빌드에는 압축을 푼 `asyncua-2.1.0\asyncua` 폴더의 코드가 들어간다.
-
-```powershell
-cd .\opcua-receiver-0.1.2\opcua-test
 py -3.12 -m venv .venv
 $python = ".\.venv\Scripts\python.exe"
 & $python -m pip install -r requirements-receiver.txt PyInstaller==6.22.3
+```
+
+로컬 `asyncua`를 사용할 때만 다음 명령을 실행한다. 라이브러리 코드를 편집한 뒤에도 이 명령으로 가상환경에 반영한다.
+
+```powershell
 & $python -m pip install --force-reinstall --no-deps ..\..\asyncua-2.1.0
+```
+
+같은 창에서 테스트와 빌드를 실행한다. 결과 파일은 `dist\OPCUA-Receiver.exe`다.
+
+```powershell
 & $python -m pip check
+& $python -m unittest test_core test_receiver_gui
 & $python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
-..\dist\OPCUA-Receiver.exe
 ```
 
 ### Ubuntu · 터미널
 
-Python 3.12와 해당 버전의 `venv` 모듈, `unzip`이 필요하다. 최소 설치 환경에서 실행 시 `libEGL.so.1` 오류가 뜨면 `sudo apt install libegl1`로 Qt에 필요한 라이브러리를 설치한다. 두 파일을 받은 폴더에서 압축을 푼다.
+Python 3.12의 `venv` 모듈이 필요하다. `opcua-test`에서 빌드 환경을 준비한다.
 
 ```bash
-unzip opcua-receiver-0.1.2-source.zip
-tar -xzf asyncua-2.1.0.tar.gz
-```
-
-같은 터미널에서 실행한다. 빌드에는 압축을 푼 `asyncua-2.1.0/asyncua` 폴더의 코드가 들어간다.
-
-```bash
-cd opcua-receiver-0.1.2/opcua-test
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements-receiver.txt PyInstaller==6.22.3
-.venv/bin/python -m pip install --force-reinstall --no-deps ../../asyncua-2.1.0
-.venv/bin/python -m pip check
-.venv/bin/python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
-../dist/OPCUA-Receiver
 ```
 
-라이브러리 코드를 편집한 뒤에는 `--force-reinstall` 줄부터 다시 실행한다. 의존성을 추가했다면 해당 패키지도 가상환경에 설치한다.
+로컬 `asyncua`를 사용할 때만 다음 명령을 실행한다. 라이브러리 코드를 편집한 뒤에도 같은 명령을 쓴다.
+
+```bash
+.venv/bin/python -m pip install --force-reinstall --no-deps ../../asyncua-2.1.0
+```
+
+같은 터미널에서 테스트와 빌드를 실행한다. 결과 파일은 `dist/OPCUA-Receiver`다.
+
+```bash
+.venv/bin/python -m pip check
+.venv/bin/python -m unittest test_core test_receiver_gui
+.venv/bin/python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
+```
+
+실행할 때 `libEGL.so.1` 오류가 뜨면 `sudo apt install libegl1`로 Qt에 필요한 라이브러리를 설치한다. 앱 메뉴 등록 스크립트와 아이콘까지 함께 배포하려면 `opcua-test`에서 압축한다.
+
+```bash
+tar -czf ../dist/OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C ../dist OPCUA-Receiver -C ../opcua-test install-launcher.sh icons/opcua-receiver.svg
+```
 
 ## 라이선스
 
