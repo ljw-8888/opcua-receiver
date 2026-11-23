@@ -15,19 +15,12 @@
 !/opcua-test/fonts/
 !/opcua-test/icons/
 !/opcua-test/install-launcher.sh
-!/opcua-test/sender.py
-!/opcua-test/field_fixture.py
 !/opcua-test/prepare_data.py
-!/opcua-test/test_*.py
 !/opcua-test/requirements-receiver.txt
 !/opcua-test/receiver.spec
 !/opcua-test/run-receiver.sh
-!/opcua-test/run-sender.sh
 !/opcua-test/receiver-guide.md
 !/opcua-test/guide-images/
-!/opcua-test/opcua-handoff.md
-!/opcua-test/receive_tag.py
-!/opcua-test/sample-pressure.xlsx
 
 !/exts/
 !/kit-tools/

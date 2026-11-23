@@ -39,6 +39,8 @@ Python 3.12를 내장한 Windows·Linux x86-64 GUI Kit 앱용 확장이다. Ubun
 
 ## 시험 서버 접속
 
+시험 서버는 HYSYS 원본 Excel의 항목과 기준값으로 만든 모의 데이터를 제공한다. 실증 설비에 접속할 때는 현장 Endpoint와 태그를 사용한다.
+
 **서버 연결** 탭의 **서버 주소 (Endpoint URL)**에 아래 주소를 넣고 **연결**을 누른다.
 
 ```text
@@ -76,7 +78,7 @@ opc.tcp://218.52.73.150:4840/hd/
 
 **Excel 저장값 보기**를 누르면 방금 저장한 값을 볼 수 있다. 압력이 일정할 때는 **마지막 저장 성공 (UTC)** 시각으로 파일 갱신 여부를 확인한다.
 
-[GUI 가이드](opcua-test/receiver-guide.md) · [Excel 예시](opcua-test/sample-pressure.xlsx)
+[GUI 가이드](opcua-test/receiver-guide.md)
 
 ## 데스크톱 수신기를 소스로 실행
 
@@ -91,12 +93,6 @@ cd opcua-receiver\opcua-test
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-receiver.txt
 .\.venv\Scripts\python.exe receiver_gui.py
-```
-
-압력 태그 하나를 터미널에서 받으려면 같은 폴더에서 실행한다.
-
-```powershell
-.\.venv\Scripts\python.exe receive_tag.py "opc.tcp://218.52.73.150:4840/hd/"
 ```
 
 </details>
@@ -114,21 +110,9 @@ python3.12 -m venv .venv
 bash run-receiver.sh
 ```
 
-압력 태그 하나를 터미널에서 받으려면 같은 폴더에서 실행한다.
-
-```bash
-.venv/bin/python receive_tag.py "opc.tcp://218.52.73.150:4840/hd/"
-```
-
 </details>
 
-## 수신 코드
-
-서버 연결, 태그 조회와 구독은 `telemetry.py`의 `Receiver` 클래스에 있다. `receive_tag.py`는 이 클래스로 압력 태그 하나를 받는 예제다. [OPC UA 수신 인계서](opcua-test/opcua-handoff.md) · [수신 코드](opcua-test/telemetry.py) · [예제](opcua-test/receive_tag.py)
-
-Claude나 Codex에서 확인하려면 복제한 `opcua-receiver` 폴더를 열고 아래처럼 요청한다.
-
-> README.md와 opcua-test/opcua-handoff.md를 읽고, 내 운영체제에서 receive_tag.py로 시험 서버의 Stream/1/Pressure를 한 번 받는 명령을 알려줘.
+서버 연결, 태그 조회와 구독은 `telemetry.py`의 `Receiver` 클래스에서 처리한다. [수신 코드](opcua-test/telemetry.py)
 
 <a id="asyncua-rebuild"></a>
 <a id="테스트와-빌드"></a>
@@ -157,11 +141,10 @@ $python = ".\.venv\Scripts\python.exe"
 & $python -m pip install --force-reinstall --no-deps ..\..\asyncua-2.1.0
 ```
 
-같은 창에서 테스트와 빌드를 실행한다. 결과 파일은 `dist\OPCUA-Receiver.exe`다.
+같은 창에서 의존성을 확인하고 빌드한다. 결과 파일은 `dist\OPCUA-Receiver.exe`다.
 
 ```powershell
 & $python -m pip check
-& $python -m unittest test_core test_receiver_gui
 & $python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
 ```
 
@@ -180,11 +163,10 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install --force-reinstall --no-deps ../../asyncua-2.1.0
 ```
 
-같은 터미널에서 테스트와 빌드를 실행한다. 결과 파일은 `dist/OPCUA-Receiver`다.
+같은 터미널에서 의존성을 확인하고 빌드한다. 결과 파일은 `dist/OPCUA-Receiver`다.
 
 ```bash
 .venv/bin/python -m pip check
-.venv/bin/python -m unittest test_core test_receiver_gui
 .venv/bin/python -m PyInstaller --clean --noconfirm --distpath ../dist --workpath ../build receiver.spec
 ```
 
