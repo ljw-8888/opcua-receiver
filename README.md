@@ -35,7 +35,9 @@ Python 3.12가 내장된 x86-64용 USD Composer 또는 GUI Kit 앱에서 사용�
 2. Kit의 **Window → Extensions**에서 검색 경로에 `exts` 폴더를 추가하고 **OPC UA Receiver**를 켠다.
 3. 설정 창은 **Window → OPC UA Settings**에서 다시 열 수 있다. Kit 시작 시 자동으로 열려면 **Autoload**를 켠다.
 
-서버 연결과 파일 저장은 씬을 열기 전에도 가능하다. [Kit 확장 사용 가이드](exts/hd.opcua.receiver/docs/README.md)
+서버 연결과 파일 저장은 씬을 열기 전에도 가능하다.
+
+### [Kit 확장 사용 가이드](exts/hd.opcua.receiver/docs/README.md)
 
 ## 태그 수신과 저장
 
