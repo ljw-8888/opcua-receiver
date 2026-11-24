@@ -1,0 +1,11 @@
+{
+  "namespaceUri": "urn:hd:opcua:test:v1",
+  "tagPrefix": "s=Stream/1/",
+  "fields": [
+    {"label": "Pressure", "tag": "Pressure"},
+    {"label": "Temperature", "tag": "Temperature"},
+    {"label": "Velocity", "tag": "Velocity"},
+    {"label": "Liquid Fraction", "tag": "LiquidFraction", "format": "percent"},
+    {"label": "Vapor Fraction", "tag": "VaporFraction", "format": "percent"}
+  ]
+}

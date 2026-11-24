@@ -2,6 +2,15 @@
 
 OPC UA 서버에서 태그를 골라 실시간 값과 단위, 품질, 수신 시각을 확인하고 Excel(`.xlsx`) 또는 USD(`.usda`)로 저장한다.
 
+```mermaid
+flowchart LR
+    S["OPC UA 시험 서버"] -->|OPC UA| R["수신기<br/>Windows · Ubuntu · Kit"]
+    R -->|USDA 파일| T["Live USDA Translator"]
+    T -->|Measurement| V["룰 기반 표현기<br/>그래픽팀 구현 예정"]
+```
+
+**Live USDA Translator**는 수신 파일의 태그에서 대상·측정 항목·값·단위를 꺼낸다. 예제 배지는 네 항목을 `Stream 1 Pressure: 4.575 barG`처럼 표시한다. 그래픽팀의 Kit 확장에서도 같은 측정값을 사용할 수 있다. [측정값 사용 예제](exts/hd.usda.translator/docs/integration.md#다른-kit-확장에서-사용)
+
 | 환경 | 설치 방법 |
 |---|---|
 | [1. Windows x64](#windows-데스크톱-실행) | 실행 파일을 내려받아 실행 |
@@ -38,6 +47,10 @@ Python 3.12가 내장된 x86-64용 USD Composer 또는 GUI Kit 앱에서 사용�
 서버 연결과 파일 저장은 씬을 열기 전에도 가능하다.
 
 ### [Kit 확장 사용 가이드](exts/hd.opcua.receiver/docs/README.md)
+
+### Live USDA Translator
+
+저장소를 복제한 뒤 같은 `exts` 경로에서 **Live USDA Translator**(`hd.usda.translator`)를 켠다. **Open USDA...**에서 수신 파일을 고르면 빈 씬에서도 배지가 뜬다. 태그를 바꾸거나 **View source**에서 원문을 확인할 수 있다. [배지 사용 가이드](exts/hd.usda.translator/docs/README.md) · [현장 태그에 맞게 파서 수정하기](exts/hd.usda.translator/docs/updating-the-parser.md)
 
 ## 태그 수신과 저장
 

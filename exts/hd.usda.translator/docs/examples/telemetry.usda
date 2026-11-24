@@ -1,0 +1,63 @@
+#usda 1.0
+(
+    customLayerData = {
+        string opcuaFormat = "hd.opcua.receiver/telemetry/1"
+    }
+    defaultPrim = "Telemetry"
+)
+
+def Scope "Telemetry"
+{
+    custom token opcua:connection = "Disconnected"
+    custom string opcua:publishedAt = "2026-01-01T00:00:05.000+00:00"
+    custom bool opcua:publishing = 0
+    custom string opcua:source = "opc.tcp://example.invalid:4840/demo/"
+
+    def Scope "Tags"
+    {
+        def Scope "T_Stream_1_Pressure_54b1a0de93399057a920c9da0f72128f9ef4f39fa7c3037f2ec0a07965272054"
+        {
+            custom string opcua:dataType = "Double"
+            custom string opcua:displayName = "Outlet pressure"
+            custom string opcua:identifier = "s=Stream/1/Pressure"
+            custom string opcua:namespaceUri = "urn:hd:opcua:test:v1"
+            custom string opcua:quality = "Good"
+            custom string opcua:receivedAt = "2026-01-01T00:00:04.850+00:00"
+            custom token opcua:sampleState = "Stale"
+            custom string opcua:sourceTimestamp = "2026-01-01T00:00:04.800+00:00"
+            custom string opcua:unit = "barG"
+            custom double opcua:value = 4.575
+            custom string opcua:valueType = "Double"
+        }
+
+        def Scope "T_Stream_1_Temperature_5ca3d2eb26c34062480f77e26128557a35970bb42b2d15ddca87c21b2f5e3857"
+        {
+            custom string opcua:dataType = "Double"
+            custom string opcua:displayName = "Outlet temperature"
+            custom string opcua:identifier = "s=Stream/1/Temperature"
+            custom string opcua:namespaceUri = "urn:hd:opcua:test:v1"
+            custom string opcua:quality = "Good"
+            custom string opcua:receivedAt = "2026-01-01T00:00:04.850+00:00"
+            custom token opcua:sampleState = "Stale"
+            custom string opcua:sourceTimestamp = "2026-01-01T00:00:04.800+00:00"
+            custom string opcua:unit = "degC"
+            custom double opcua:value = 0.57
+            custom string opcua:valueType = "Double"
+        }
+
+        def Scope "T_Stream_10_Pressure_71878402da4040dd9a383b324da6f4f67881d32f72ca0cd1b8fdbd2f227165e3"
+        {
+            custom string opcua:dataType = "Double"
+            custom string opcua:displayName = "Return pressure"
+            custom string opcua:identifier = "s=Stream/10/Pressure"
+            custom string opcua:namespaceUri = "urn:hd:opcua:test:v1"
+            custom string opcua:quality = "Good"
+            custom string opcua:receivedAt = "2026-01-01T00:00:04.850+00:00"
+            custom token opcua:sampleState = "Stale"
+            custom string opcua:sourceTimestamp = "2026-01-01T00:00:04.800+00:00"
+            custom string opcua:unit = "barG"
+            custom double opcua:value = 5.25
+            custom string opcua:valueType = "Double"
+        }
+    }
+}
