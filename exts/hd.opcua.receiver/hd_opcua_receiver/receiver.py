@@ -113,20 +113,34 @@ def interval(value, name):
     return value
 
 
+async def read_metadata(node):
+    variant_type = await node.read_data_type_as_variant_type()
+    unit = ""
+    with contextlib.suppress(ua.UaStatusCodeError):
+        for prop in await node.get_properties():
+            if (await prop.read_browse_name()).Name in ("EngineeringUnits", "Unit"):
+                value = await prop.read_value()
+                unit = value.DisplayName.Text if isinstance(value, ua.EUInformation) else str(value)
+                break
+    return variant_type.name, unit or ""
+
+
 class Receiver:
-    def __init__(self):
+    def __init__(self, on_session_lost=None):
+        self._on_session_lost = on_session_lost
         self.tags = []
         self.folders = []
         self.namespaces = []
         self.selected = set()
         self.samples = {}
+        self._previous_samples = {}
         self.state = "Disconnected"
         self.error = ""
         self.task = None
         self.client = None
         self.url = ''
         self.security = {}
-        self._node_keys = {}
+        self._node_tags = {}
         self._heartbeat_node = None
         self._heartbeat_value = None
         self.heartbeat = ('', '')
@@ -149,6 +163,7 @@ class Receiver:
             self.folders.clear()
             self.selected.clear()
         self.samples.clear()
+        self._previous_samples.clear()
         self.url = url
         self.security = security
         self.connections = 0
@@ -161,6 +176,7 @@ class Receiver:
         if not set(identifiers) <= known:
             raise ValueError("Unknown selection; browse the server first")
         self.selected = set(identifiers)
+        self._previous_samples = {k: v for k, v in self._previous_samples.items() if k in self.selected}
         self._revision += 1
 
     def set_heartbeat(self, text, namespace_uri='', seconds=6):
@@ -188,37 +204,25 @@ class Receiver:
     def _resolve_tag(self, tag):
         return self._address(tag['node_id'], tag['namespace_uri'])[0]
 
-    async def add_node(self, text, namespace_uri='', alias='', unit=''):
-        requested_unit = unit
-        if not self.client:
+    async def add_node(self, text, namespace_uri=''):
+        client = self.client
+        if not client:
             raise ValueError("Connect to the server first")
         node_id, uri, local = self._address(text, namespace_uri)
-        node = self.client.get_node(node_id)
+        node = client.get_node(node_id)
         if await node.read_node_class() != ua.NodeClass.Variable:
             raise ValueError('Choose a Variable node, not an Object or Method')
         display = await node.read_display_name()
-        variant_type = await node.read_data_type_as_variant_type()
+        data_type, unit = await read_metadata(node)
+        if self.client is not client:
+            raise ValueError("Server connection changed during tag lookup")
         key = address_key(uri, local)
-        if not unit:
-            with contextlib.suppress(ua.UaStatusCodeError):
-                for prop in await node.get_properties():
-                    name = (await prop.read_browse_name()).Name
-                    if name in ('EngineeringUnits', 'Unit'):
-                        value = await prop.read_value()
-                        unit = value.DisplayName.Text if isinstance(value, ua.EUInformation) else str(value)
-                        break
-        tag = {'identifier': key, 'namespace_uri': uri, 'node_id': local,
-               'asset': 'OPC UA', 'metric': alias.strip() or display.Text or local,
-               'unit': unit or '', 'data_type': variant_type.name}
         previous = next((t for t in self.tags if t['identifier'] == key), None)
         if previous:
-            if alias.strip():
-                previous['metric'] = alias.strip()
-            if requested_unit or not previous['unit']:
-                previous['unit'] = unit or ''
-            previous['data_type'] = variant_type.name
+            previous.update(unit=unit, data_type=data_type)
         else:
-            self.tags.append(tag)
+            self.tags.append(dict(identifier=key, namespace_uri=uri, node_id=local, asset='OPC UA',
+                                  metric=display.Text or local, unit=unit, data_type=data_type))
         return key
 
     async def browse(self, text='ns=0;i=85', namespace_uri=''):
@@ -244,11 +248,17 @@ class Receiver:
         self.browse_note = f'{len(refs)} children; {failed} unreadable variables'
         return keys
 
+    async def _subscription_node(self, client, tag):
+        node = client.get_node(self._resolve_tag(tag))
+        if not tag["data_type"]:
+            tag["data_type"], tag["unit"] = await read_metadata(node)
+        return node
+
     async def _subscribe(self, client, subscription):
         if subscription:
             await subscription.delete()
         self.subscription_count = 0
-        self._node_keys = {}
+        self._node_tags = {}
         self._heartbeat_node = None
         self.heartbeat_at = None
         self._heartbeat_value = None
@@ -256,13 +266,22 @@ class Receiver:
         self.samples = {k: v for k, v in self.samples.items() if k in self.selected}
         by_id = {tag['identifier']: tag for tag in self.tags}
         nodes = {}
-        for key in sorted(self.selected):
-            try:
-                node_id = self._resolve_tag(by_id[key])
-                self._node_keys[node_id.to_string()] = key
-                nodes[node_id.to_string()] = client.get_node(node_id)
-            except ValueError:
-                self.samples[key] = {'value': None, 'quality': 'MissingNamespace'}
+        keys = sorted(self.selected)
+        for start in range(0, len(keys), 8):
+            batch = keys[start:start + 8]
+            results = await asyncio.gather(*(self._subscription_node(client, by_id[k]) for k in batch),
+                                           return_exceptions=True)
+            for key, node in zip(batch, results):
+                if isinstance(node, ValueError):
+                    self.samples[key] = {'value': None, 'quality': 'MissingNamespace'}
+                elif isinstance(node, ua.UaStatusCodeError):
+                    self.samples[key] = {'value': None, 'quality': ua.StatusCode(node.code).name}
+                elif isinstance(node, BaseException):
+                    raise node
+                else:
+                    address = node.nodeid.to_string()
+                    self._node_tags[address] = by_id[key]
+                    nodes[address] = node
         if self.heartbeat[0]:
             try:
                 node_id, uri, local = self._address(*self.heartbeat)
@@ -290,14 +309,15 @@ class Receiver:
                     handles = [ua.StatusCode(exc.code)] * len(batch)
                 for node, handle in zip(batch, handles):
                     address = node.nodeid.to_string()
-                    key = self._node_keys.get(address)
+                    tag = self._node_tags.get(address)
                     if isinstance(handle, ua.StatusCode):
-                        if key:
-                            self.accept(key, ua.DataValue(StatusCode=handle))
+                        if tag:
+                            # Creating the monitored item failed; no sample arrived.
+                            self.samples[tag["identifier"]] = {"quality": handle.name, "status_code": handle.value}
                         if address == self._heartbeat_node:
                             self.heartbeat_error = handle.name
                         continue
-                    if key:
+                    if tag:
                         self.subscription_count += 1
                 # Monitored items receive an initial DataChange as well as subsequent changes.
                 start += len(batch)
@@ -317,6 +337,8 @@ class Receiver:
                     await secure_client(client, self.security)
                     async with client:
                         self.namespaces = await client.get_namespace_array()
+                        for tag in self.tags:
+                            tag.update(unit="", data_type="")
                         self.client = client
                         self.samples.clear()
                         self.heartbeat_at = None
@@ -336,6 +358,14 @@ class Receiver:
                                 await asyncio.sleep(0.5)
                                 await client.check_connection()
                         finally:
+                            self.state = "Reconnecting"
+                            self.client = None
+                            self.subscription_count = 0
+                            self._previous_samples.update((k, v) for k, v in self.samples.items()
+                                                          if k in self.selected and v.get("received_at"))
+                            self.samples.clear()
+                            if self._on_session_lost:
+                                self._on_session_lost()
                             if subscription:
                                 with contextlib.suppress(Exception):
                                     await subscription.delete()
@@ -345,9 +375,6 @@ class Receiver:
                     self.error = f"{type(exc).__name__}: {exc}"
                     self.state = "Reconnecting"
                     LOG.warning("Connection lost: %s", self.error)
-                finally:
-                    self.client = None
-                    self.subscription_count = 0
                 await asyncio.sleep(retry)
                 retry = min(retry * 2, 10)
         finally:
@@ -355,12 +382,15 @@ class Receiver:
             self.state = "Disconnected"
             self.subscription_count = 0
 
-    def accept(self, identifier, dv):
+    def _accept_sample(self, tag, dv):
         self.notification_count += 1
+        identifier = tag["identifier"]
         if identifier not in self.selected:
             return
         raw = dv.Value.Value if dv.Value else None
         self.samples[identifier] = {
+            "unit": tag["unit"],
+            "data_type": tag["data_type"],
             "value": raw if dv.StatusCode.is_good() else None,
             "raw_value": raw,
             "quality": dv.StatusCode.name,
@@ -380,12 +410,13 @@ class Receiver:
                 self.heartbeat_error = ''
             else:
                 self.heartbeat_error = dv.StatusCode.name
-        key = self._node_keys.get(address)
-        if key:
-            self.accept(key, dv)
+        tag = self._node_tags.get(address)
+        if tag:
+            self._accept_sample(tag, dv)
 
     def datachange_notification(self, node, value, data):
-        self._accept_node(node.nodeid.to_string(), data.monitored_item.Value)
+        if self.client and node.session is self.client.uaclient.session:
+            self._accept_node(node.nodeid.to_string(), data.monitored_item.Value)
 
     def status_change_notification(self, status):
         LOG.warning("Subscription status: %s", status)
@@ -405,23 +436,29 @@ class Receiver:
             return 'Waiting for heartbeat'
         return "Stale" if time.monotonic() - self.heartbeat_at > self.stale_seconds else "Fresh"
 
-    def snapshot(self):
+    def snapshot(self, *, for_excel=False):
         stamp = utc_now()
         by_id = {tag["identifier"]: tag for tag in self.tags}
         rows = []
         for identifier in sorted(self.selected):
             tag = by_id[identifier]
             sample = self.samples.get(identifier, {})
+            connection = self.state
+            if for_excel and not sample.get("received_at") and identifier in self._previous_samples:
+                # A connected transport alone does not make the previous sample live.
+                sample = self._previous_samples[identifier]
+                if connection == "Connected":
+                    connection = "Reconnecting"
             rows.append({
                 "saved_at": stamp, "source": self.url, "asset": tag["asset"],
-                "metric": tag["metric"], "unit": tag["unit"], "identifier": tag['node_id'],
-                "namespace_uri": tag['namespace_uri'], 'data_type': tag['data_type'],
+                "metric": tag["metric"], "unit": sample.get("unit", tag["unit"]), "identifier": tag['node_id'],
+                "namespace_uri": tag['namespace_uri'], 'data_type': sample.get("data_type", tag['data_type']),
                 "value": sample.get("value"), "raw_value": sample.get("raw_value"),
                 "quality": sample.get("quality", "Missing"), "status_code": sample.get("status_code"),
                 "source_timestamp": sample.get("source_timestamp", ""),
                 "server_timestamp": sample.get("server_timestamp", ""),
                 "received_at": sample.get("received_at", ""),
-                "connection": self.state, "freshness": self.freshness,
+                "connection": connection, "freshness": self.freshness,
             })
         return rows
 

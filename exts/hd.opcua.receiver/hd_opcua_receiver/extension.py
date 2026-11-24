@@ -380,10 +380,10 @@ class OpcUaExtension(omni.ext.IExt):
                     ui.Label(tag["node_id"], width=ui.Fraction(TABLE_WEIGHTS[1]), elided_text=True,
                              tooltip=f'{tag["namespace_uri"]}\n{tag["node_id"]}')
                     value = ui.Label("", width=ui.Fraction(TABLE_WEIGHTS[2]), elided_text=True)
-                    ui.Label(tag["unit"], width=ui.Fraction(TABLE_WEIGHTS[3]))
+                    unit = ui.Label("", width=ui.Fraction(TABLE_WEIGHTS[3]))
                     quality = ui.Label("", width=ui.Fraction(TABLE_WEIGHTS[4]), elided_text=True)
                     stamp = ui.Label("", width=ui.Fraction(TABLE_WEIGHTS[5]), elided_text=True)
-                    self._cells[key] = (value, quality, stamp)
+                    self._cells[key] = (value, unit, quality, stamp)
         self._update_values()
 
     def _check(self, key, model):
@@ -398,7 +398,9 @@ class OpcUaExtension(omni.ext.IExt):
             raw = sample.get("value")
             value = f"{raw:.7g}" if isinstance(raw, float) else ("" if raw is None else str(raw))
             stamp = sample.get("received_at", "").replace("T", " ").removesuffix("+00:00")
-            for widget, text in zip(widgets, (value, sample.get("quality", ""), stamp)):
+            tag = s.tags.get(key, {})
+            unit = s.display_unit(key, sample.get("unit", tag.get("unit", "")))
+            for widget, text in zip(widgets, (value, unit, sample.get("quality", ""), stamp)):
                 if widget.text != text:
                     widget.text = text
                     widget.tooltip = text

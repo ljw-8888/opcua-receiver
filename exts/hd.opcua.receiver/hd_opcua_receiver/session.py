@@ -21,7 +21,8 @@ ROOT_NODE = "i=85"
 
 class Session:
     def __init__(self, config):
-        self.receiver = Receiver()
+        self._wake_writer = asyncio.Event()
+        self.receiver = Receiver(on_session_lost=self._wake_writer.set)
         self.config = Path(config)
         self.definitions = hysys_definitions()
         self.settings = {}
@@ -164,14 +165,21 @@ class Session:
 
     async def register(self, node, uri, alias, unit):
         tag = await self._resolve(node, uri)
-        record = dict(tag, metric=alias.strip() or tag["metric"], unit=unit.strip() or tag["unit"])
+        unit = unit.strip()
+        record = dict(tag, metric=alias.strip() or tag["metric"], unit=unit or tag["unit"], unit_override=unit)
         self.persist(add=record)
         return tag["identifier"]
 
     async def include_registered(self, keys):
         for key in keys:
             record = self.registered[key]
-            await self._resolve(record["node_id"], record["namespace_uri"])
+            tag = await self._resolve(record["node_id"], record["namespace_uri"])
+            if "unit_override" not in record:
+                # Older registrations stored only the displayed unit. Keep a
+                # different saved label as manual; otherwise follow the server.
+                unit = record["unit"]
+                record = dict(record, unit_override=unit if unit != tag["unit"] else "")
+                self.persist(add=record)
             self.overrides[key] = record
             self.chosen.add(key)
         self.revision += 1
@@ -200,41 +208,37 @@ class Session:
         if settings is not None:
             self.persist(settings=settings)
         if not self.receiver.selected:
-            # Browse returns addresses and names cheaply. Read the type and engineering
-            # unit only for the tags the operator actually subscribes to.
-            pending = [self.tags[k] for k in self.chosen if not self.tags[k]["data_type"]]
-            for start in range(0, len(pending), 8):
-                results = await asyncio.gather(*(self._resolve(t["node_id"], t["namespace_uri"])
-                                                 for t in pending[start:start + 8]), return_exceptions=True)
-                for result in results:
-                    if isinstance(result, BaseException) and not isinstance(result, (ValueError, ua.UaStatusCodeError)):
-                        raise result
             self.paused.clear()
             self.receiver.samples.clear()
             self.receiver.select(self.chosen)
         if filename is not None:
-            self._stop_save = asyncio.Event()
+            self._stop_save = False
             self.last_save = ""
             self.save_status = tr("첫 수신 대기 중")
             self.writer = asyncio.create_task(self._write(path, seconds))
         self.revision += 1
 
-    def snapshot(self):
-        if self.receiver.state != "Connected":
+    def display_unit(self, key, server_unit):
+        return self.overrides.get(key, {}).get("unit_override") or server_unit
+
+    def snapshot(self, *, for_excel=False):
+        if not for_excel and self.receiver.state != "Connected":
             return []
-        rows = self.receiver.snapshot()
+        rows = self.receiver.snapshot(for_excel=for_excel)
         for row in rows:
-            override = self.overrides.get(address_key(row["namespace_uri"], row["identifier"]))
+            key = address_key(row["namespace_uri"], row["identifier"])
+            override = self.overrides.get(key)
             if override:
-                row.update(metric=override["metric"], unit=override["unit"])
+                row.update(metric=override["metric"], unit=self.display_unit(key, row["unit"]))
         return rows
 
     async def _write(self, path, seconds):
         try:
             with FileLock(str(path) + ".lock", timeout=0):
-                while not self._stop_save.is_set():
+                while not self._stop_save:
+                    self._wake_writer.clear()
                     try:
-                        tables = await asyncio.to_thread(save_latest, path, self.snapshot(),
+                        tables = await asyncio.to_thread(save_latest, path, self.snapshot(for_excel=True),
                                                          self.definitions, preview=True)
                         if tables:
                             self.last_save = datetime.now(timezone.utc).strftime("%H:%M:%S")
@@ -245,7 +249,7 @@ class Session:
                     except OSError as exc:
                         self.save_status = tr("저장 실패 · 다음 주기에 재시도합니다.") + " " + str(exc)
                     with contextlib.suppress(TimeoutError):
-                        await asyncio.wait_for(self._stop_save.wait(), seconds)
+                        await asyncio.wait_for(self._wake_writer.wait(), seconds)
         except Exception as exc:
             self.save_status = tr("Excel 저장 중지") + " · " + str(exc)
         finally:
@@ -254,7 +258,8 @@ class Session:
 
     async def stop_save(self):
         if self.writer:
-            self._stop_save.set()
+            self._stop_save = True
+            self._wake_writer.set()
             await self.writer
             self.save_status = tr("Excel 저장 중지")
 
