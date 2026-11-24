@@ -86,10 +86,12 @@ class OpcUaExtension(omni.ext.IExt):
         self._notice = tr("서버 주소를 입력하고 연결하세요.")
         self._models = {k: ui.SimpleStringModel(str(self.session.settings.get(k, default))) for k, default in {
             "endpoint": "", "namespace": "", "node": "", "alias": "", "unit": "", "search": "",
-            "file": "", "seconds": "5", "username": "", "password": "", "key_password": "",
+            "file": "", "usda_file": "", "seconds": "5", "usda_seconds": "1",
+            "username": "", "password": "", "key_password": "",
             "certificate": "", "private_key": "", "server_certificate": "", "application_uri": "",
         }.items()}
         self._mode = self.session.settings.get("mode", "None")
+        self._format = "usda" if self.session.settings.get("output_format") == "usda" else "xlsx"
         self._auth = self.session.settings.get("auth", "Anonymous")
         self._models["search"].add_value_changed_fn(self._search_changed)
         self._window = ui.Window(TITLE, width=1130, height=695, visible=True, raster_policy=ui.RasterPolicy.NEVER)
@@ -138,7 +140,7 @@ class OpcUaExtension(omni.ext.IExt):
 
     def _options(self):
         values = {k: v.as_string for k, v in self._models.items()}
-        return dict(values, mode=self._mode, auth=self._auth)
+        return dict(values, mode=self._mode, auth=self._auth, output_format=self._format)
 
     def _call(self, fn, *args):
         if self._busy:
@@ -210,26 +212,41 @@ class OpcUaExtension(omni.ext.IExt):
             self._browser = ui.ScrollingFrame(width=237)
             self._browser.set_build_fn(self._build_browser)
             self._make_table()
-        ui.Label(tr("Excel 저장"), height=26)
+        excel = self._format == "xlsx"
+        file_key = "file" if excel else "usda_file"
+        with ui.HStack(height=28, spacing=4):
+            ui.Label(tr("저장 형식"), width=100)
+            formats = ui.ComboBox(0 if excel else 1, "Excel (.xlsx)", "USD (.usda)", width=180)
+            formats.model.add_item_changed_fn(self._choose_format)
+            formats.enabled = not self.session.writer
+            self._controls.append((formats, lambda: not self.session.writer))
+            ui.Spacer()
         with ui.HStack(height=26, spacing=4):
             ui.Label(tr("결과 파일"), width=100)
-            self._field("file", enabled=lambda: not self.session.writer)
-            self._button(tr("파일 선택"), lambda: self._pick("file"), lambda: not self.session.writer, width=86)
-            self._button(tr("Excel 저장값 보기"), self._show_preview, width=138)
+            self._field(file_key, enabled=lambda: not self.session.writer)
+            self._button(tr("파일 선택"), lambda: self._pick(file_key), lambda: not self.session.writer, width=86)
+            if excel:
+                self._button(tr("Excel 저장값 보기"), self._show_preview, width=138)
         with ui.HStack(height=28, spacing=4):
             ui.Label(tr("저장 주기 (초)"), width=100)
-            self._field("seconds", enabled=lambda: not self.session.writer, width=68)
+            self._field("seconds" if excel else "usda_seconds", enabled=lambda: not self.session.writer, width=68)
             ui.Spacer()
             self._button(tr("수신만 시작"), lambda: self._start(False),
                          lambda: self.editable and bool(self.session.chosen), width=110)
             self._button(tr("수신·저장 시작"), lambda: self._start(True),
                          lambda: receiver.state == "Connected" and bool(self.session.chosen) and not self.session.writer,
                          width=132)
-            self._button(tr("Excel 저장 중지"), self.session.stop_save, lambda: bool(self.session.writer), width=130)
+            self._button(tr("파일 저장 중지"), self.session.stop_save, lambda: bool(self.session.writer), width=130)
             self._button(tr("수신 중지"), self.session.pause, lambda: bool(receiver.selected), width=96)
         with ui.HStack(height=24):
             self._save_label = ui.Label(tr(self.session.save_status))
             self._last_label = ui.Label("", alignment=ui.Alignment.RIGHT_CENTER)
+
+    def _choose_format(self, model, item):
+        selected = ("xlsx", "usda")[model.get_item_value_model().as_int]
+        if not self.session.writer and selected != self._format:
+            self._format = selected
+            self._content.rebuild()
 
     def _can_select(self):
         return self.editable and bool(self._visible_keys) and (
@@ -257,7 +274,10 @@ class OpcUaExtension(omni.ext.IExt):
 
     async def _start(self, save):
         opts = self._options()
-        await self.session.start(filename=opts["file"] if save else None, seconds=opts["seconds"],
+        excel = self._format == "xlsx"
+        filename = opts["file" if excel else "usda_file"]
+        await self.session.start(filename=filename if save else None, output_format=self._format,
+                                 seconds=opts["seconds" if excel else "usda_seconds"],
                                  settings={k: opts[k] for k in SAVED_FIELDS})
         self._select_group("chosen")
         self._notice = tr("태그 {n}개 수신 중").format(n=len(self.session.chosen))
@@ -502,11 +522,12 @@ class OpcUaExtension(omni.ext.IExt):
                 return
             if filename:
                 path = Path(dirname) / filename
-                if key == "file" and not path.suffix:
-                    path = path.with_suffix(".xlsx")
+                if key in ("file", "usda_file") and not path.suffix:
+                    path = path.with_suffix(".xlsx" if key == "file" else ".usda")
                 self._models[key].set_value(str(path))
             self._picker.hide()
-        self._picker = FilePickerDialog("Excel file" if key == "file" else "Certificate / Key",
+        title = {"file": "Excel file (.xlsx)", "usda_file": "Telemetry file (.usda)"}.get(key, "Certificate / Key")
+        self._picker = FilePickerDialog(title,
                                         allow_multi_selection=False, apply_button_label="Select",
                                         click_apply_handler=apply,
                                         click_cancel_handler=lambda *args: self._picker.hide())

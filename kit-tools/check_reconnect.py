@@ -1,4 +1,4 @@
-"""Exercise server restart, Kit table widgets, the snapshot API and the saved workbook.
+"""Exercise server restart, Kit table widgets, the snapshot API and both output formats.
 
 Run in Kit with --enable omni.kit.uiapp --enable hd.opcua.receiver --exec <this file>.
 The script starts its own loopback server and exits Kit with the test result.
@@ -14,6 +14,7 @@ import omni.kit.app
 import omni.ui as ui
 from asyncua import Server, ua
 from openpyxl import load_workbook
+from pxr import Sdf, Usd
 
 from hd_opcua_receiver import extension as ext
 from hd_opcua_receiver.receiver import address_key
@@ -45,7 +46,25 @@ async def make_server(endpoint, *, restarted):
     return server, ns
 
 
-def workbook_rows(path):
+def saved_rows(path):
+    if path.suffix == ".usda":
+        # Open an independent layer from disk, bypassing the layer registry.
+        stage = Usd.Stage.Open(Sdf.Layer.OpenAsAnonymous(str(path)))
+        root = stage.GetDefaultPrim()
+        assert str(root.GetPath()) == "/Telemetry"
+        result = {}
+        for prim in root.GetChild("Tags").GetChildren():
+            def get(name):
+                attribute = prim.GetAttribute("opcua:" + name)
+                return attribute.Get() if attribute else None
+            assert get("namespaceUri") == URI
+            result[get("identifier")] = {
+                "값": get("value"), "단위": get("unit"), "수신 시각": get("receivedAt"),
+                "연결 상태": root.GetAttribute("opcua:connection").Get(), "state": get("sampleState"),
+                "publishing": root.GetAttribute("opcua:publishing").Get(),
+                "path": str(prim.GetPath()), "type": get("valueType"),
+            }
+        return result
     with closing(load_workbook(path, read_only=True)) as book:
         rows = iter(book["최신값"].values)
         header = next(rows)
@@ -70,11 +89,11 @@ def table_values(panel):
     return result
 
 
-async def exercise(directory):
+async def exercise(directory, suffix):
     panel = ext._active
     session = panel.session
     session.config = directory / "registrations.json"
-    path = directory / "values.xlsx"
+    path = directory / ("values." + suffix)
     with closing(socket.socket()) as sock:
         sock.bind(("127.0.0.1", 0))
         endpoint = f"opc.tcp://127.0.0.1:{sock.getsockname()[1]}/reconnect/"
@@ -112,9 +131,9 @@ async def exercise(directory):
                 stat = path.stat()
                 file_id = (stat.st_ino, stat.st_mtime_ns)
                 if file_id != last_file:
-                    disk = workbook_rows(path)
+                    disk = saved_rows(path)
                     if disk["s=Pressure"]["값"] == 200 and disk["s=Pressure"]["단위"] != "kPa":
-                        bad_pairs.add(("Excel", disk["s=Pressure"]["단위"]))
+                        bad_pairs.add((suffix, disk["s=Pressure"]["단위"]))
                     if loss_at is not None and offline_save_at is None and disk["s=Flow"]["연결 상태"] != "Connected":
                         offline_save_at = now
                     last_file = file_id
@@ -130,11 +149,19 @@ async def exercise(directory):
                 key = await session.register("s=" + name, URI, name, unit)
                 await session.include_registered([key])
             panel._select_group("chosen")
-            await session.start(filename=str(path), seconds=str(PERIOD))
+            if suffix == "usda":
+                combo = next(w for w, _ in panel._controls if isinstance(w, ui.ComboBox))
+                combo.model.get_item_value_model().set_value(1)
+                assert panel._format == "usda"
+                panel._models["usda_file"].set_value(str(path))
+                panel._models["usda_seconds"].set_value(str(PERIOD))
+                await panel._start(True)
+            else:
+                await session.start(filename=str(path), seconds=str(PERIOD))
             await wait_for(lambda: path.exists() and
-                           workbook_rows(path)["s=Flow"]["값"] == 7.75 and
+                           saved_rows(path)["s=Flow"]["값"] == 7.75 and
                            table_values(panel).get("s=Pressure") == ("2", "bar"))
-            before = workbook_rows(path)
+            before = saved_rows(path)
             assert before["s=Pressure"]["단위"] == "bar"
             assert before["s=Manual"]["단위"] == "operator-unit"
             print("INITIAL:", [(k, r["값"], r["단위"], r["연결 상태"], r["수신 시각"]) for k, r in before.items()], flush=True)
@@ -144,32 +171,45 @@ async def exercise(directory):
             await wait_for(lambda: offline_save_at is not None, PERIOD + 0.25)
         except TimeoutError:
             pass
-        offline = workbook_rows(path)["s=Flow"]
+        offline = saved_rows(path)["s=Flow"]
         elapsed = offline_save_at - loss_at if offline_save_at is not None else None
         print("OFFLINE:", offline["값"], offline["단위"], offline["연결 상태"], offline["수신 시각"],
               "elapsed", elapsed, "interval", PERIOD, "API=[]", flush=True)
-        check(elapsed is not None and elapsed <= PERIOD + 0.1, "missed the next Excel save")
+        check(elapsed is not None and elapsed <= PERIOD + 0.1, "missed the next file save")
         check(offline["연결 상태"] in ("Reconnecting", "Disconnected"), "stale connection in workbook")
         check(offline["값"] == 7.75 and offline["수신 시각"] == before["s=Flow"]["수신 시각"], "lost last sample")
         async with second:
             await wait_for(lambda: api().get("s=Pressure", {}).get("value") == 200)
-            await wait_for(lambda: workbook_rows(path)["s=Flow"]["값"] == 775 and
+            await wait_for(lambda: saved_rows(path)["s=Flow"]["값"] == 775 and
                            table_values(panel).get("s=Pressure", ("", ""))[0] == "200")
-            after = workbook_rows(path)
+            after = saved_rows(path)
             rows = api()
             for name, expected, unit in (("Pressure", 200, "kPa"), ("Flow", 775, "kPa"), ("Manual", 11, "operator-unit")):
                 node = "s=" + name
                 row, disk = rows[node], after[node]
                 displayed = table_values(panel)[node]
                 print("RECONNECTED:", name, "API", row["value"], row["unit"], row["data_type"],
-                      "GUI", displayed, "XLSX", disk["값"], disk["단위"], disk["연결 상태"], disk["수신 시각"], flush=True)
+                      "GUI", displayed, suffix, disk["값"], disk["단위"], disk["연결 상태"], disk["수신 시각"], flush=True)
                 check((row["value"], row["unit"], row["data_type"]) == (expected, unit, "Int64"), name + " API")
                 check(displayed == (str(expected), unit), name + " Kit table")
                 check((disk["값"], disk["단위"], disk["연결 상태"]) == (expected, unit, "Connected"), name + " workbook")
                 check(disk["수신 시각"] == row["received_at"] and disk["수신 시각"] != before[node]["수신 시각"], name + " timestamp")
             check(not bad_pairs, f"transient mismatches {bad_pairs}")
             print("NAMESPACE:", ns1, "->", ns2, "MISMATCHES:", bad_pairs, flush=True)
+            if suffix == "usda":
+                assert len(after) == 3
+                assert before["s=Pressure"]["type"] == "Double" and after["s=Pressure"]["type"] == "Int64"
+                assert before["s=Pressure"]["path"] == after["s=Pressure"]["path"]
+                assert offline["state"] == "Stale" and after["s=Flow"]["state"] == "Current"
+                await session.stop_save()
+                stopped = saved_rows(path)["s=Pressure"]
+                assert not stopped["publishing"] and stopped["state"] == "Stale" and api()["s=Pressure"]["value"] == 200
+                await panel._start(True)
+                await wait_for(lambda: saved_rows(path)["s=Pressure"]["publishing"])
             await session.disconnect()
+            if suffix == "usda":
+                stopped = saved_rows(path)["s=Pressure"]
+                assert not stopped["publishing"] and stopped["연결 상태"] == "Disconnected"
     finally:
         monitor_task.cancel()
         try:
@@ -185,7 +225,8 @@ async def main():
     code = 1
     try:
         with tempfile.TemporaryDirectory() as tmp:
-            await exercise(Path(tmp))
+            for suffix in ("xlsx", "usda"):
+                await exercise(Path(tmp), suffix)
         print("RECONNECT PASS", flush=True)
         code = 0
     except Exception:

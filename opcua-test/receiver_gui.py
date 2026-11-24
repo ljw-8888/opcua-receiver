@@ -22,6 +22,7 @@ from latest_excel import hysys_definitions, save_latest
 from saved_preview import SavedPreview
 from telemetry import (LEGACY_PREFIX, NAMESPACE, Receiver, SECURITY_MODES, address_key, interval,
                        validate_endpoint)
+from latest_usda import UsdaOutput
 
 
 ROOT = Path(__file__).resolve().parent
@@ -31,7 +32,9 @@ if getattr(sys, "frozen", False) and sys.platform.startswith("linux"):
     DATA_DIR = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share") / "opcua-receiver"
 CONFIG = DATA_DIR / "receiver-settings.json"
 SAVED_FIELDS = ("mode", "auth", "username", "certificate", "private_key",
-                "server_certificate", "application_uri", "seconds")
+                "server_certificate", "application_uri", "seconds", "usda_seconds", "format")
+EXCEL = "Excel (.xlsx)"
+USDA = "USD (.usda)"
 
 
 def migrate_settings(target, previous):
@@ -88,7 +91,8 @@ def configure_display(app):
 class Panel(QWidget):
     def __init__(self):
         super().__init__()
-        self.receiver = Receiver()
+        self._wake_writer = asyncio.Event()
+        self.receiver = Receiver(on_session_lost=self._wake_writer.set)
         self.definitions = hysys_definitions()
         self.recording = None
         self.paused_samples = None
@@ -242,31 +246,39 @@ class Panel(QWidget):
         self.browser_layout.addLayout(sidebar, 1)
         self.browser_layout.addWidget(self.tree, 4)
         receive.addLayout(self.browser_layout, 1)
-        group = QGroupBox("Excel 저장")
+        group = QGroupBox("파일 저장")
         receive.addWidget(group)
         output = QGridLayout(group)
         output.setColumnStretch(1, 1)
-        self.field(output, 0, 0, "file", "결과 파일", span=3)
+        self.field(output, 0, 0, "format", "저장 형식", EXCEL, choices=[EXCEL, USDA])
+        self.fields["format"].setMaximumWidth(200)
+        self.field(output, 1, 0, "file", "결과 파일", span=3)
         self.fields["file"].setPlaceholderText("저장 경로와 파일명.xlsx")
+        self.fields["usda_file"] = QLineEdit()
+        self.fields["usda_file"].setPlaceholderText("저장 경로와 파일명.usda")
+        output.addWidget(self.fields["usda_file"], 1, 1, 1, 3)
         file_actions = QHBoxLayout()
-        output.addLayout(file_actions, 0, 4)
+        output.addLayout(file_actions, 1, 4)
         file_actions.addWidget(self.button("파일 선택", self.pick_file))
         file_help = QToolButton()
         file_help.setText("?")
         file_help.setAccessibleName("결과 파일 도움말")
         file_help.setToolTip("결과 파일 도움말")
-        file_help.setWhatsThis("경로와 .xlsx 파일명을 직접 입력하거나 ‘파일 선택’을 누르세요. 기존 폴더에 새 파일을 만들거나 기존 파일의 결과 시트를 갱신합니다.")
+        file_help.setWhatsThis("Excel은 기존 통합문서의 결과 시트를 갱신합니다. USD는 새 파일 또는 이 서버의 수신 데이터 파일을 선택하세요.")
         file_help.clicked.connect(lambda: QWhatsThis.showText(
             file_help.mapToGlobal(file_help.rect().bottomLeft()), file_help.whatsThis(), file_help))
         file_actions.addWidget(file_help)
-        self.field(output, 2, 0, "seconds", "Excel 저장 주기 (초)", "5")
+        self.field(output, 2, 0, "seconds", "저장 주기 (초)", "5")
         self.fields["seconds"].setMaximumWidth(100)
-        self.fields["seconds"].setToolTip("화면은 서버에서 수신한 값을 계속 표시합니다. Excel에는 매 저장 시점의 최신값만 기록합니다.")
+        self.fields["usda_seconds"] = QLineEdit("1")
+        self.fields["usda_seconds"].setMaximumWidth(100)
+        output.addWidget(self.fields["usda_seconds"], 2, 1)
         output.addWidget(self.button("수신·저장 시작", self.start, True), 2, 3)
-        output.addWidget(self.button("Excel 저장 중지", self.stop), 2, 4)
+        output.addWidget(self.button("파일 저장 중지", self.stop), 2, 4)
         output.addWidget(self.button("수신 중지", self.pause_receiving), 2, 5)
-        output.addWidget(self.button("Excel 저장값 보기", self.preview.show), 0, 5)
-        self.save_status = QLabel("Excel 저장 대기")
+        self.preview_button = self.button("Excel 저장값 보기", self.preview.show)
+        output.addWidget(self.preview_button, 1, 5)
+        self.save_status = QLabel("저장 대기")
         self.save_status.setWordWrap(True)
         output.addWidget(self.save_status, 3, 0, 1, 4)
         self.last_save = QLabel("마지막 저장 성공 (UTC)  —")
@@ -282,6 +294,8 @@ class Panel(QWidget):
                         self.set_field(key, saved[key])
             except (OSError, ValueError, KeyError) as exc:
                 self.note.setText(f"설정 읽기 오류: {exc}")
+        self.fields["format"].currentTextChanged.connect(self.update_format)
+        self.update_format()
         self.fields["mode"].currentTextChanged.connect(self.update_security)
         self.fields["auth"].currentTextChanged.connect(self.update_security)
         self.update_security()
@@ -302,6 +316,13 @@ class Panel(QWidget):
             self.browser_layout.addWidget(self.tree, 4)
         self.tree.show()
         self.sync_tree()
+
+    def update_format(self):
+        excel = self.get("format") == EXCEL
+        self.file_key, self.period_key = ("file", "seconds") if excel else ("usda_file", "usda_seconds")
+        self.preview_button.setVisible(excel)
+        for key in ("file", "seconds", "usda_file", "usda_seconds"):
+            self.fields[key].setVisible(key in (self.file_key, self.period_key))
 
     def update_security(self):
         secure = self.get("mode") != "None"
@@ -381,8 +402,9 @@ class Panel(QWidget):
             ("remove_from_list", editable and self.tabs.currentIndex() == 2 and bool(self.tree.selectedItems())),
         ):
             self.controls[name].setEnabled(enabled)
-        self.fields["file"].setReadOnly(saving)
-        self.fields["seconds"].setReadOnly(saving)
+        self.fields["format"].setEnabled(not saving)
+        self.fields[self.file_key].setReadOnly(saving)
+        self.fields[self.period_key].setReadOnly(saving)
         self.fields["endpoint"].setReadOnly(session)
         self.tabs.widget(1).setEnabled(not session)
 
@@ -534,7 +556,8 @@ class Panel(QWidget):
             value = sample.get("value")
             shown = f"{value:.7g}" if isinstance(value, float) else ("" if value is None else str(value))
             label = self.manual_selection.get(key, tag)
-            values = (label["metric"], tag["node_id"], shown, label["unit"],
+            unit = label.get("unit_override") or sample.get("unit", tag["unit"])
+            values = (label["metric"], tag["node_id"], shown, unit,
                       sample.get("quality", ""), sample.get("received_at", "").replace("T", " ").removesuffix("+00:00"))
             item = self.items.get(key)
             if item is None:
@@ -599,7 +622,7 @@ class Panel(QWidget):
         if client is not self.receiver.client or self.receiver.selected:
             return
         tag = next(t for t in self.receiver.tags if t["identifier"] == key)
-        self.persist(added=dict(tag, metric=alias or tag["metric"], unit=unit or tag["unit"]))
+        self.persist(added=dict(tag, metric=alias or tag["metric"], unit=unit or tag["unit"], unit_override=unit))
         self.refresh_registrations(focus_key=key)
         self.note.setText(f"{alias or tag['metric']} 태그를 등록했습니다.")
 
@@ -616,6 +639,9 @@ class Panel(QWidget):
             if (self.receiver.client is not client or self.receiver.selected
                     or tag["identifier"] not in self.registrations.get(self.receiver.url, {})):
                 return
+            if "unit_override" not in tag:
+                current = next(t for t in self.receiver.tags if t["identifier"] == tag["identifier"])
+                self.persist(added=dict(tag, unit_override=tag["unit"] if tag["unit"] != current["unit"] else ""))
         keys = set(keys).intersection(self.registrations[self.receiver.url])
         if not keys:
             return
@@ -626,7 +652,7 @@ class Panel(QWidget):
             self.visible_keys = self.chosen.copy()
         self.sync_tree()
         if added:
-            next_step = ("‘서버 연결’ 탭에서 수신·저장을 시작하세요." if self.get("file").strip() else
+            next_step = ("‘서버 연결’ 탭에서 수신·저장을 시작하세요." if self.get(self.file_key).strip() else
                          "‘서버 연결’ 탭에서 결과 파일을 지정하고 수신·저장을 시작하세요.")
             self.note.setText(f"수신할 태그 목록에 {added}개 추가했습니다. {next_step}")
         else:
@@ -644,11 +670,12 @@ class Panel(QWidget):
         self.note.setText(f"직접 등록 {len(keys)}개 삭제")
 
     def pick_file(self):
+        excel = self.get("format") == EXCEL
         path, _ = QFileDialog.getSaveFileName(self, "새 파일 이름 입력 또는 기존 파일 선택",
-                                              self.get("file"), "Excel (*.xlsx)",
+                                              self.get(self.file_key), "Excel (*.xlsx)" if excel else "USD (*.usda)",
                                               options=QFileDialog.Option.DontConfirmOverwrite)
         if path:
-            self.set_field("file", path if Path(path).suffix else path + ".xlsx")
+            self.set_field(self.file_key, path if Path(path).suffix else path + (".xlsx" if excel else ".usda"))
 
     def start(self):
         if self.recording or self.receiver.state != "Connected":
@@ -658,12 +685,11 @@ class Panel(QWidget):
         keys = self.chosen.copy()
         if not keys:
             raise ValueError("수신할 태그를 한 개 이상 선택하세요.")
-        seconds = interval(self.get("seconds"), "저장 주기")
-        if not self.get("file").strip():
-            raise ValueError("결과 Excel 파일의 위치와 이름을 지정하세요.")
-        path = Path(self.get("file").strip()).expanduser().resolve()
-        if path.suffix.lower() != ".xlsx" or not path.parent.is_dir():
-            raise ValueError("기존 폴더 안에 .xlsx 경로를 지정하세요.")
+        seconds = interval(self.get(self.period_key), "저장 주기")
+        path = Path(self.get(self.file_key).strip()).expanduser().resolve()
+        suffix = ".xlsx" if self.get("format") == EXCEL else ".usda"
+        if path.suffix.lower() != suffix or not path.parent.is_dir():
+            raise ValueError(f"기존 폴더 안에 {suffix} 파일명을 지정하세요.")
         settings = {key: self.get(key) for key in SAVED_FIELDS}
         self.persist(settings=settings)
         self.active_manual = self.manual_selection.copy()
@@ -672,52 +698,71 @@ class Panel(QWidget):
         self.paused_samples = None
         if keys != self.receiver.selected:
             self.receiver.select(keys)
-        self.stop_event = asyncio.Event()
+        self._stopping = False
+        self._final_connection = None
         self.save_status.setText("첫 수신 대기 중")
         self.last_save.setText("마지막 저장 성공 (UTC)  —")
-        self.recording = asyncio.create_task(self.write_loop(path,seconds))
+        self.recording = asyncio.create_task(self.write_loop(path, seconds))
         self.note.setText(f"태그 {len(keys)}개 수신·저장을 시작했습니다.")
         self.sync_tree()
 
-    async def write_loop(self,path,seconds):
+    async def write_loop(self, path, seconds):
+        usda = UsdaOutput(path) if path.suffix.lower() == ".usda" else None
         try:
             with FileLock(str(path) + ".lock", timeout=0):
-                while not self.stop_event.is_set():
+                while True:
+                    self._wake_writer.clear()
+                    stopping = self._stopping
+                    if stopping and not usda:
+                        break
                     try:
-                        rows = self.receiver.snapshot()
+                        rows = self.receiver.snapshot(for_excel=True)
                         for row in rows:
                             record = self.active_manual.get(address_key(row["namespace_uri"], row["identifier"]))
                             if record:
-                                row.update(metric=record["metric"], unit=record["unit"])
-                        tables = await asyncio.to_thread(save_latest, path, rows, self.definitions, preview=True)
-                        if tables:
+                                row.update(metric=record["metric"], unit=record.get("unit_override") or row["unit"])
+                        if usda:
+                            state = self._final_connection or self.receiver.state
+                            await asyncio.to_thread(usda.save, self.receiver.url, state, not stopping, rows)
+                            saved = True
+                        else:
+                            tables = await asyncio.to_thread(save_latest, path, rows, self.definitions, preview=True)
+                            saved = bool(tables)
+                        if saved:
                             self.save_status.setText(f"{path.name} 저장 완료 · {seconds:g}초 간격 · 태그 {len(rows)}개")
                             stamp = datetime.now(timezone.utc).strftime("%H:%M:%S")
                             self.last_save.setText("마지막 저장 성공 (UTC)  " + stamp)
-                            self.preview.saved(path, stamp, tables)
+                            if not usda:
+                                self.preview.saved(path, stamp, tables)
                         else:
                             self.save_status.setText("첫 수신 대기 중")
-                    except PermissionError:
-                        self.save_status.setText(f"{path.name} 저장 실패 · Excel에서 파일을 닫고 폴더 쓰기 권한을 확인하세요. 다음 주기에 재시도합니다.")
                     except OSError as exc:
+                        if stopping:
+                            raise
                         self.save_status.setText(f"저장 실패, 다음 주기에 재시도: {exc}")
+                    if stopping:
+                        break
+                    if self._stopping:
+                        continue
                     with contextlib.suppress(asyncio.TimeoutError):
-                        await asyncio.wait_for(self.stop_event.wait(),seconds)
+                        await asyncio.wait_for(self._wake_writer.wait(), seconds)
+            self.save_status.setText("파일 저장 중지")
         except Timeout:
             self.save_status.setText("다른 수신기가 이 파일에 저장 중입니다. 다른 결과 파일을 선택하세요.")
         except Exception as exc:
-            self.save_status.setText(f"Excel 저장 중지: {exc}")
+            self.save_status.setText(f"파일 저장 중지: {exc}")
         finally:
             self.recording = None
             self.update_controls()
 
     async def stop(self):
         if self.recording:
-            self.stop_event.set()
-            await self.recording
-            self.save_status.setText("Excel 저장 중지")
+            self._stopping = True
+            self._wake_writer.set()
+            await asyncio.shield(self.recording)
 
     async def disconnect(self):
+        self._final_connection = "Disconnected"
         await self.stop()
         await self.receiver.disconnect()
         self.receiver.select([])
@@ -726,11 +771,11 @@ class Panel(QWidget):
         self.update_controls()
 
     async def pause_receiving(self):
+        await self.stop()
         self.active_manual.clear()
         if self.receiver.selected:
             self.paused_samples = self.receiver.samples.copy()
             self.receiver.select([])
-        await self.stop()
         self.note.setText("수신과 저장을 중지했습니다. 태그를 변경하거나 다시 시작할 수 있습니다.")
         self.sync_tree()
 

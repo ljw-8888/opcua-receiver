@@ -12,10 +12,11 @@ from filelock import FileLock
 
 from .language import tr
 from .latest_excel import hysys_definitions, save_latest
+from .latest_usda import UsdaOutput
 from .receiver import NAMESPACE, Receiver, address_key, interval
 
 SAVED_FIELDS = ("mode", "auth", "username", "certificate", "private_key",
-                "server_certificate", "application_uri", "seconds")
+                "server_certificate", "application_uri", "seconds", "usda_seconds", "output_format")
 ROOT_NODE = "i=85"
 
 
@@ -40,7 +41,7 @@ class Session:
         self._client = None
         self._scan = None
         self.writer = None
-        self.save_status = tr("Excel 저장 대기")
+        self.save_status = tr("저장 대기")
         self.last_save = ""
         self.preview = None
         self.revision = 0
@@ -63,7 +64,7 @@ class Session:
             for key in remove:
                 records.pop(key, None)
             if settings is not None:
-                data["settings"] = {k: settings[k] for k in SAVED_FIELDS}
+                data["settings"] = {k: settings[k] for k in SAVED_FIELDS if k in settings}
             pending = self.config.with_suffix(".tmp")
             pending.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
             pending.replace(self.config)
@@ -195,16 +196,17 @@ class Session:
                 self.overrides.pop(key, None)
         self.revision += 1
 
-    async def start(self, *, filename=None, seconds="5", settings=None):
+    async def start(self, *, filename=None, seconds=None, settings=None, output_format=None):
         if self.receiver.state != "Connected" or not self.chosen:
             raise ValueError(tr("서버에 연결하고 수신할 태그를 선택하세요."))
         if self.writer:
             raise ValueError(tr("이미 저장 중입니다."))
         if filename is not None:
             path = Path(filename.strip()).expanduser().resolve()
-            if not filename.strip() or path.suffix.lower() != ".xlsx" or not path.parent.is_dir():
-                raise ValueError(tr("기존 폴더 안에 결과 파일(.xlsx)을 지정하세요."))
-            seconds = interval(seconds, tr("저장 주기"))
+            suffix = path.suffix.lower()
+            if suffix not in (".xlsx", ".usda") or (output_format and suffix != "." + output_format) or not path.parent.is_dir():
+                raise ValueError(tr("선택한 형식에 맞는 파일명을 기존 폴더에 지정하세요."))
+            seconds = interval(seconds if seconds is not None else (1 if suffix == ".usda" else 5), tr("저장 주기"))
         if settings is not None:
             self.persist(settings=settings)
         if not self.receiver.selected:
@@ -213,6 +215,7 @@ class Session:
             self.receiver.select(self.chosen)
         if filename is not None:
             self._stop_save = False
+            self._final_connection = None
             self.last_save = ""
             self.save_status = tr("첫 수신 대기 중")
             self.writer = asyncio.create_task(self._write(path, seconds))
@@ -233,35 +236,53 @@ class Session:
         return rows
 
     async def _write(self, path, seconds):
+        usda = UsdaOutput(path, tr) if path.suffix.lower() == ".usda" else None
         try:
             with FileLock(str(path) + ".lock", timeout=0):
-                while not self._stop_save:
+                while True:
                     self._wake_writer.clear()
+                    stopping = self._stop_save
+                    if stopping and not usda:
+                        break
                     try:
-                        tables = await asyncio.to_thread(save_latest, path, self.snapshot(for_excel=True),
-                                                         self.definitions, preview=True)
-                        if tables:
+                        rows = self.snapshot(for_excel=True)
+                        if usda:
+                            connection = self._final_connection or self.receiver.state
+                            await asyncio.to_thread(usda.save, self.receiver.url, connection, not stopping, rows)
+                            saved = True
+                        else:
+                            tables = await asyncio.to_thread(save_latest, path, rows, self.definitions, preview=True)
+                            saved = bool(tables)
+                        if saved:
                             self.last_save = datetime.now(timezone.utc).strftime("%H:%M:%S")
-                            self.preview = (path.name, self.last_save, tables)
+                            if not usda:
+                                self.preview = (path.name, self.last_save, tables)
                             self.save_status = tr("{name} 저장 완료 · {n:g}초 간격").format(name=path.name, n=seconds)
                         else:
                             self.save_status = tr("수신 대기 중")
                     except OSError as exc:
+                        if stopping:
+                            raise
                         self.save_status = tr("저장 실패 · 다음 주기에 재시도합니다.") + " " + str(exc)
+                    if stopping:
+                        break
+                    if self._stop_save:
+                        continue
                     with contextlib.suppress(TimeoutError):
                         await asyncio.wait_for(self._wake_writer.wait(), seconds)
+            self.save_status = tr("파일 저장 중지")
         except Exception as exc:
-            self.save_status = tr("Excel 저장 중지") + " · " + str(exc)
+            self.save_status = tr("파일 저장 중지") + " · " + str(exc)
         finally:
             self.writer = None
             self.revision += 1
 
-    async def stop_save(self):
+    async def stop_save(self, *, final_connection=None):
         if self.writer:
+            self._final_connection = final_connection
             self._stop_save = True
             self._wake_writer.set()
             await self.writer
-            self.save_status = tr("Excel 저장 중지")
 
     async def pause(self):
         await self.stop_save()
@@ -270,7 +291,7 @@ class Session:
         self.revision += 1
 
     async def disconnect(self):
-        await self.stop_save()
+        await self.stop_save(final_connection="Disconnected")
         if self._scan:
             self._scan.cancel()
             await asyncio.gather(self._scan, return_exceptions=True)

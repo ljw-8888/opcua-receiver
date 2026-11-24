@@ -1,4 +1,4 @@
-OPC UA Receiver v0.1.2 — asyncua
+OPC UA Receiver v0.3.0 — asyncua
 
 The Windows and Ubuntu executables include asyncua 2.1.0 by Olivier
 Roulet-Dubonnet and the FreeOpcUa contributors. asyncua is distributed
@@ -11,10 +11,9 @@ Source distribution: https://pypi.org/project/asyncua/2.1.0/#files
 asyncua-2.1.0.tar.gz SHA-256:
 d741f5e21f189ac0a45b8dda13539c2d49d8d992b9b62d2758efe1bfd3d1454c
 
-The corresponding receiver source is commit
-917f80b3dac754cad1831d0bee770b9cd3dd2258 (v0.1.2).
-Both source archives accompany the executables at
-https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.1.2
+The corresponding receiver source is tagged v0.3.0.
+The receiver and asyncua source archives accompany the executables at
+https://github.com/ljw-8888/opcua-receiver/releases/tag/v0.3.0
 
 Recipients may modify asyncua and recombine it with the receiver,
 including reverse engineering for debugging those modifications.

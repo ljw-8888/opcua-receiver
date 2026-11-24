@@ -391,6 +391,8 @@ class Receiver:
         self.samples[identifier] = {
             "unit": tag["unit"],
             "data_type": tag["data_type"],
+            "value_type": dv.Value.VariantType.name if dv.Value else "",
+            "dimensions": dv.Value.Dimensions if dv.Value else None,
             "value": raw if dv.StatusCode.is_good() else None,
             "raw_value": raw,
             "quality": dv.StatusCode.name,
@@ -453,6 +455,7 @@ class Receiver:
                 "saved_at": stamp, "source": self.url, "asset": tag["asset"],
                 "metric": tag["metric"], "unit": sample.get("unit", tag["unit"]), "identifier": tag['node_id'],
                 "namespace_uri": tag['namespace_uri'], 'data_type': sample.get("data_type", tag['data_type']),
+                "value_type": sample.get("value_type", ""), "dimensions": sample.get("dimensions"),
                 "value": sample.get("value"), "raw_value": sample.get("raw_value"),
                 "quality": sample.get("quality", "Missing"), "status_code": sample.get("status_code"),
                 "source_timestamp": sample.get("source_timestamp", ""),

@@ -8,6 +8,7 @@
 !/opcua-test/
 /opcua-test/*
 !/opcua-test/receiver_gui.py
+!/opcua-test/check_output.py
 !/opcua-test/saved_preview.py
 !/opcua-test/latest_excel.py
 !/opcua-test/telemetry.py
