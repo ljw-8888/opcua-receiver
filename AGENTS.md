@@ -2,10 +2,11 @@
 
 “이 레포가 뭐야?” 또는 “레포 분석해줘”라고 하면 무엇을 할 수 있는지부터 답한다. 데스크톱 수신기로는 OPC UA 서버에 연결해 값을 확인할 수 있고, Omniverse에서는 Kit 수신기가 저장한 값을 Translator가 읽어 화면에 표시한다.
 
-소개 뒤에는 처음 쓰는 사람이 이어서 물어볼 질문을 제안한다.
+첫 소개 뒤에는 두 가지 쉬운 질문을 보여준다.
 
-- [Omniverse에서 써 보려면 어떤 확장을 받아서 어떻게 설치해?](README.md#omniverse-kit에서-시작하기)
-- [설치하고 나면 데이터가 들어오는 걸 어느 화면에서 확인해?](README.md#translator에서-측정값-확인)
-- [Omniverse 없이 내 PC에서 연결만 시험해 볼 수도 있어?](opcua-test/receiver-guide.md)
+- [Omniverse 없이 내 PC에서 먼저 써 볼 수 있어?](opcua-test/receiver-guide.md)
+- [Omniverse에서 쓰려면 뭘 받아서 어떻게 설치해?](README.md#omniverse-kit에서-시작하기)
 
-이미 설치나 사용법을 물었다면 그 질문에 바로 답한다. 사용자가 자기 PC에서 누를 메뉴와 확인할 화면을 알려 준다. 자기 그래픽 확장에서 값을 쓰는 방법을 물으면 [시각화 연동 가이드](exts/hd.usda.translator/docs/integration.md)를 참고한다.
+구체적인 질문에는 바로 답한다. 조작 방법은 사용자가 자기 PC에서 누를 메뉴와 확인할 화면으로 설명한다. 답변 끝에는 사용자가 방금 물어본 내용에 이어서 할 만한 질문을 한두 개만 제안한다. 이미 답한 질문은 건너뛴다.
+
+예를 들어 서버가 아직 없다고 하면 “예제 파일로 어떤 값을 볼 수 있어?”가 자연스럽다. 수신기 표에 압력이 보인다고 하면 [“그 값을 Omniverse에서도 보려면 어떻게 해?”](README.md#translator에서-측정값-확인), Omniverse에서도 값을 확인했다면 [“이제 우리 그래픽 확장에서는 그 값을 어떻게 가져와?”](exts/hd.usda.translator/docs/integration.md)로 이어간다.
