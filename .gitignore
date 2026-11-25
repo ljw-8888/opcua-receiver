@@ -3,6 +3,8 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/AGENTS.md
+!/CLAUDE.md
 !/licenses/
 !/.github/
 !/opcua-test/
