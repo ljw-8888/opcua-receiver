@@ -1,5 +1,11 @@
 # OPC UA 수신과 Omniverse 시각화 연동
 
+Windows·Ubuntu에서는 데스크톱 수신기로 OPC UA 서버에 연결해 태그 값을 확인하고 Excel이나 USDA로 저장할 수 있다. Omniverse에서는 Kit 수신기가 저장한 USDA를 Translator가 읽고, 그래픽팀은 그 측정값을 자기 확장의 설비 화면에 연결한다.
+
+![압력 태그가 시험 서버에서 Kit 수신기의 USDA를 거쳐 Translator의 측정값이 되고, 그래픽팀의 배관 압력 칸에 표시되는 과정](exts/hd.usda.translator/docs/receiver-to-display.png)
+
+[태그를 화면 항목에 연결하는 전체 그림 보기](exts/hd.usda.translator/docs/graphics-handoff.png)
+
 <a id="데스크톱-수신기-실행"></a>
 
 ## 1. 데스크톱 수신기로 OPC UA 연결 테스트
@@ -83,10 +89,6 @@ GitHub Actions의 **Desktop receiver build**에서도 Windows·Ubuntu 배포본�
 
 ## 2. Omniverse에서 수신·시각화
 
-한 PC의 Kit 앱에서 **OPC UA Receiver**가 서버 태그를 구독해 로컬 USDA를 갱신하고, **Live USDA Translator**가 같은 파일을 읽는다. 현재는 내장 오버레이에서 측정값을 확인할 수 있다. 그래픽팀의 시각화 확장도 완성되면 같은 앱에서 Translator의 값을 받는다.
-
-![OPC UA 시험 서버, 수신기, Translator, 시각화 확장의 입력과 출력](exts/hd.usda.translator/docs/data-flow.svg)
-
 ### Omniverse Kit에서 시작하기
 
 Kit에서 바로 수신할 때는 아래 절차부터 시작한다. 수신기 확장은 Python 3.12를 내장한 Windows·Linux x86-64용 GUI Kit 앱에서 사용할 수 있다.
@@ -119,6 +121,16 @@ Kit을 다시 열 때도 두 확장을 사용하려면 각각 **Autoload**를 �
 
 그래픽팀이 추가할 시각화 확장은 같은 Kit 앱에서 1초마다 `get_latest_measurements()`를 한 번 호출한다. 배지에서 고른 다섯 줄과 관계없이, 현재 USDA에 저장된 모든 태그의 최근 측정값을 받는다.
 
+**측정값을 설비별 화면에 연결하는 예**
+
+한 번 호출해 세 행을 받았다면, 각 행의 대상과 항목으로 화면 칸을 찾고 그 행의 값과 단위를 표시한다.
+
+| 대상 `m.target` | 항목 `m.quantity` | 값 `m.value` | 단위 `m.unit` | 연결할 화면 칸 | 표시 결과 |
+|---|---|---:|---|---|---|
+| Stream 1 | Pressure | 4.575 | barG | 1번 배관 압력 | **4.575 barG** |
+| Stream 1 | Temperature | 0.57 | degC | 1번 배관 온도 | **0.57 degC** |
+| Stream 10 | Pressure | 5.25 | barG | 10번 배관 압력 | **5.25 barG** |
+
 ```python
 import asyncio
 from hd_usda_translator import get_latest_measurements
@@ -129,7 +141,7 @@ async def update_view(render_frame):
         await asyncio.sleep(1)
 ```
 
-`render_frame`은 그래픽팀의 화면 갱신 함수다. 예를 들어 `target="Stream 1"`, `quantity="Pressure"`인 행의 `value`와 `unit`을 Stream 1 배관에 표시한다. 값이 `None`이면 해당 행의 `status`를 사용하고, 목록이 비면 화면을 수신 대기로 돌린다.
+`render_frame`은 그래픽팀의 화면 갱신 함수다. 화면을 만들 때 정한 `(target, quantity)`로 매칭하므로 다음 호출에서 행 순서가 바뀌어도 같은 배관의 칸을 갱신한다. 값이 `None`이면 해당 행의 `status`를 사용하고, 목록이 비면 화면을 수신 대기로 돌린다.
 
 Translator의 뷰포트 오버레이도 같은 함수를 호출한다. 확장 의존성 설정과 갱신 루프를 시작하고 종료하는 예제는 연동 가이드에 있다. [시각화 연동 가이드](exts/hd.usda.translator/docs/integration.md) · [오버레이 코드](exts/hd.usda.translator/hd_usda_translator/overlay.py)
 
