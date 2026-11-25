@@ -1,6 +1,5 @@
 {
-  "namespaceUri": "urn:hd:opcua:test:v1",
-  "tagPrefix": "s=Stream/1/",
+  "defaultTarget": "Stream 1",
   "fields": [
     {"label": "Pressure", "tag": "Pressure"},
     {"label": "Temperature", "tag": "Temperature"},

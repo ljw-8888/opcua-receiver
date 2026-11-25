@@ -1,5 +1,4 @@
 """Viewport example that displays selected rows from the public measurement API."""
-from . import get_latest_measurements
 from .badges import measurement_line
 
 
@@ -20,24 +19,18 @@ class ScreenBadge:
                                            style={"color": 0xffb9c2c3})
                 ui.Spacer(width=12)
 
-    def refresh(self, selected, publication_status, idle_status):
-        batch = get_latest_measurements()
-        by_tag = {(m.namespace_uri, m.identifier): m for m in batch}
-        namespaces = {}
-        for uri, identifier in selected.values():
-            namespaces.setdefault(identifier, set()).add(uri)
-
+    def refresh(self, selected, by_field, publication_status, idle_status):
         self.status.text = f"USDA: {publication_status}" if publication_status else idle_status
         for row, line in enumerate(self.lines):
-            uri, identifier = selected[row]
-            measurement = by_tag.get((uri, identifier))
-            if measurement is None:
-                missing = "No tag" if publication_status else "—"
-                text = f"{identifier}: {missing}"
-            else:
+            field = selected[row]
+            measurement, missing = field.resolve(by_field)
+            if measurement is not None:
                 text = measurement_line(measurement)
-            if len(namespaces[identifier]) > 1:
-                text += f" [{uri}]"
+                if field.source_tag:
+                    text += f" [{measurement.namespace_uri}]"
+                line.tooltip = f"{text}\n{measurement.identifier}\n{measurement.namespace_uri}"
+            else:
+                text = f"{field.label}: {missing if publication_status else '—'}"
+                line.tooltip = text
             if line.text != text:
                 line.text = text
-            line.tooltip = f"{text}\n{identifier}\n{uri}"

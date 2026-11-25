@@ -10,7 +10,9 @@ Translator가 수신기의 USDA를 읽어 전체 태그를 변환해 둔다. 같
 2. **Badge tags**에서 첫 줄을 누르고 압력 태그를 고른다. 시험 서버의 `s=Stream/1/Pressure`가 `4.575 barG`이면 첫 줄에 **Stream 1 Pressure: 4.575 barG**가 뜬다.
 3. 다른 줄에 온도를 고르면 두 값을 함께 볼 수 있다. 배지에서 어떤 줄을 바꿔도 시각화 확장이 받는 목록에는 파일의 모든 태그가 들어 있다.
 
-실제 화면 갱신 코드는 [overlay.py의 `ScreenBadge.refresh()`](../hd_usda_translator/overlay.py)에 있다. 한 번 호출해 받은 목록에서 `(namespace_uri, identifier)`로 사용자가 고른 태그를 찾고, 값·단위 또는 상태를 해당 줄에 쓴다. 숫자로 보려면 수신기가 저장 중인 파일을 연다. 함께 제공한 예제 파일은 수신을 종료한 시점이어서 **Stopped**가 뜬다. [배지 화면과 조작 방법](README.md)
+배지도 아래 그래픽 확장 예제와 같은 방식으로 값을 찾는다. 매초 한 번 받은 목록을 `(m.target, m.quantity)`로 묶고, 첫 줄에 연결한 `("Stream 1", "Pressure")`의 값·단위를 쓴다. 파일에 같은 대상·항목이 여럿이면 그 줄에 **태그 중복**이 뜬다. **Badge tags**에서 원하는 출처를 직접 고르면 그 줄은 해당 출처만 표시한다. [전체 목록을 받는 코드](../hd_usda_translator/extension.py) · [배지의 줄을 갱신하는 코드](../hd_usda_translator/overlay.py)
+
+숫자로 보려면 수신기가 저장 중인 파일을 연다. 함께 제공한 예제 파일은 수신을 종료한 시점이어서 **Stopped**가 뜬다. [배지 화면과 조작 방법](README.md)
 
 ## 다른 Kit 확장에서 사용
 

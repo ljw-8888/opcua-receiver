@@ -17,7 +17,11 @@ def _read_sections(path, keys, expected_source):
     if snapshot.source != expected_source:
         raise ValueError("Endpoint changed. Open the file again.")
     sections = []
-    for row, (uri, identifier) in enumerate(keys, start=1):
+    for row, (name, address, reason) in enumerate(keys, start=1):
+        if address is None:
+            sections.append((f"{row}. {name}", "/Telemetry/Tags", reason))
+            continue
+        uri, identifier = address
         sample = snapshot.tags.get((snapshot.source, uri, identifier))
         label = f"{row}. {identifier}  [{uri}]"
         if sample is None:

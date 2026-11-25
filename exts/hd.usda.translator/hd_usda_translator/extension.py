@@ -10,6 +10,8 @@ from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu
 from omni.kit.viewport.utility import get_active_viewport_window
 from omni.kit.window.filepicker import FilePickerDialog
 
+from . import get_latest_measurements
+from .badges import group_measurements
 from .measurements import TAG_DEFAULTS, _publish
 from .overlay import ScreenBadge
 from .source_view import SourceWindow
@@ -121,7 +123,7 @@ class TranslatorExtension(omni.ext.IExt):
     def _show_source(self):
         if self._source_button.enabled:
             self._close_source()
-            self._source_window = SourceWindow(self._file.path, tuple(self._tags.selected.values()),
+            self._source_window = SourceWindow(self._file.path, self._tags.source_rows(),
                                                self._file.snapshot.source)
 
     def _mount(self, window):
@@ -140,7 +142,8 @@ class TranslatorExtension(omni.ext.IExt):
             ui.Spacer()
 
     def _display(self, snapshot, status, notice, idle_status):
-        self._tags.update_snapshot(snapshot)
+        by_field = group_measurements(get_latest_measurements())
+        self._tags.update_snapshot(snapshot, by_field)
         self._source_button.enabled = snapshot is not None
         window = get_active_viewport_window()
         if not window:
@@ -148,7 +151,7 @@ class TranslatorExtension(omni.ext.IExt):
             self._status.text = "Open a viewport to see the badge."
             return
         self._mount(window)
-        self._badge.refresh(self._tags.selected, status, idle_status)
+        self._badge.refresh(self._tags.selected, by_field, status, idle_status)
         self._status.text = f"{status}  ·  {snapshot.source}" if snapshot else notice
 
     def _detach(self):

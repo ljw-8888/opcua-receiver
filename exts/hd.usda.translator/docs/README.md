@@ -6,7 +6,7 @@ OPC UA 수신기의 USDA를 읽어 태그별 대상·항목·값·단위를 제�
 
 1. 수신기와 같은 Kit 앱에서 **Live USDA Translator**를 켠다. 처음 설치한다면 두 확장이 들어 있는 저장소를 받아 [Kit 확장 등록 순서](../../../README.md#omniverse-kit에서-시작하기)를 따른다.
 2. **Window → Live USDA Translator**를 열고 `Open USDA...` 버튼으로 수신기가 로컬 디스크에 저장 중인 USDA를 고른다. 빈 씬에서도 뷰포트가 열려 있으면 배지가 뜬다. 기본 항목은 Stream 1의 압력, 온도, 유속, 액체·기체 분율이다.
-3. **Badge tags**에서 바꿀 줄을 누른다. **Find tag**에 표시명, 식별자 또는 Namespace URI를 입력하고 태그를 고른다. **Reset defaults**를 누르면 기본 다섯 항목으로 돌아간다.
+3. **Badge tags**에서 바꿀 줄을 누른다. **Find tag**에 `Stream 1 Pressure`처럼 대상과 항목을 입력해 고른다. 서버 표시명, 식별자, Namespace URI로도 검색할 수 있다. **Reset defaults**를 누르면 기본 다섯 항목으로 돌아간다.
 
 ![Stream 2의 압력, Stream 6의 온도, Stream 1의 유속과 분율](stream-badges.png)
 
@@ -28,6 +28,7 @@ OPC UA 수신기의 USDA를 읽어 태그별 대상·항목·값·단위를 제�
 |---|---|
 | `Live` | 수신기가 연결돼 있고 파일이 갱신 중이다. 개별 태그의 품질은 각 줄에 표시한다. |
 | `No tag` | 선택한 태그가 파일에 없다. 수신기의 저장 대상에 포함됐는지 확인한다. |
+| `태그 중복` | 같은 대상·항목에 측정값이 여럿이다. 출처를 알고 있다면 **Badge tags**에서 주소를 확인해 고른다. 이후 그 출처가 빠지면 `No tag`가 뜬다. |
 | `Waiting` · `Stale` · `Unavailable` | 첫 값을 기다리거나, 이전 값이거나, 사용할 수 없는 값이다. 품질 이상으로 `Unavailable`이 뜨면 **View source**에서 해당 태그의 `opcua:quality`를 확인한다. |
 | `Reconnecting` · `Stopped` | 수신기가 재연결 중이거나 파일 저장을 끝냈다. |
 | `No update` | 마지막 발행 이후 제한 시간이 지났다. 파일이 계속 갱신되는지 확인한다. `No update after (s)`는 수신기의 저장 주기보다 길게 설정하고 **Show badge**를 눌러 적용한다. 기본값은 10초다. |
