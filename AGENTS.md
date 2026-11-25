@@ -13,29 +13,54 @@
 
 ## 그래픽 확장에서 값을 가져오는 방법을 물으면
 
-정상 수신 예시를 먼저 보여준다. 같은 Kit 앱에서 `get_latest_measurements()`를 한 번 호출하면 Translator가 읽은 태그별 최신값이 튜플로 돌아온다. 태그가 100개면 `Measurement` 객체도 100개다. 아래 한 행이 객체 하나이고, 각 열은 그 객체에서 읽을 수 있는 필드다.
+태그가 몇 개든 방법은 같다. **어느 태그를 화면 어디에 표시할지는 처음에 한 번 정하고, 실행 중에는 그 대응표를 따라 값만 갱신한다.** 처음 보는 사람에게는 아래 예를 들어 수신값이 화면까지 가는 과정을 설명한다.
 
-| `target` 대상 | `quantity` 항목 | `value` 값 | `unit` 단위 | `status` 상태 |
-|---|---|---:|---|---|
-| Stream 1 | Pressure | 4.575 | barG | Live |
-| Stream 1 | Temperature | 0.57 | degC | Live |
+### 1. 어떤 값이 들어오나?
 
-이어서 그래픽 확장이 1초마다 전체를 한 번 읽고, 원하는 설비와 항목을 찾아 쓰는 코드까지 보여준다.
+같은 Kit 앱에서 `get_latest_measurements()`를 한 번 호출하면, Translator가 읽은 최신값이 튜플로 돌아온다. 태그 하나가 `Measurement` 객체 하나다. 예를 들어 1번 배관의 압력과 온도가 들어오면 아래처럼 읽을 수 있다. 두 태그의 Namespace URI는 모두 `urn:hd:opcua:test:v1`이다.
+
+| 대상 `m.target` | 항목 `m.quantity` | 식별자 `m.identifier` | 값 `m.value` | 단위 `m.unit` |
+|---|---|---|---:|---|
+| Stream 1 | Pressure | s=Stream/1/Pressure | 4.575 | barG |
+| Stream 1 | Temperature | s=Stream/1/Temperature | 0.57 | degC |
+
+### 2. 처음 한 번, 화면 항목과 태그를 짝짓는다
+
+그래픽팀은 자기 화면에서 값을 넣을 곳을 정한다. 예를 들어 1번 배관 옆에 압력 칸과 온도 칸이 있으면 각각 화면 ID를 붙이고, 그 칸이 읽을 태그 주소를 기록한다. 아래 화면 ID는 예시다.
+
+| 화면에 표시할 곳 | 그래픽팀의 화면 ID | 연결할 태그 (`namespace_uri`, `identifier`) |
+|---|---|---|
+| 1번 배관의 압력 칸 | `pipe01.pressure` | `urn:hd:opcua:test:v1`, `s=Stream/1/Pressure` |
+| 1번 배관의 온도 칸 | `pipe01.temperature` | `urn:hd:opcua:test:v1`, `s=Stream/1/Temperature` |
+
+이 대응표는 그래픽 확장이 갖는다. 화면 항목을 추가하면 그 항목의 짝을 한 줄 추가한다. 설비와 태그의 이름에 일정한 규칙이 있다면 기존 설비 목록에서 대응표를 만들어도 된다.
+
+### 3. 매번 전체를 한 번 받아 연결된 화면을 모두 갱신한다
 
 ```python
 from hd_usda_translator import get_latest_measurements
 
-texts = {}
-for m in get_latest_measurements():
-    key = (m.target, m.quantity)
-    if key in texts:
-        texts[key] = "태그 중복"
-    elif m.value is None:
-        texts[key] = m.status
-    else:
-        texts[key] = f"{m.value} {m.unit}".strip()
+uri = "urn:hd:opcua:test:v1"
+tag_for_display = {
+    "pipe01.pressure":    (uri, "s=Stream/1/Pressure"),
+    "pipe01.temperature": (uri, "s=Stream/1/Temperature"),
+}
 
-pressure_text = texts.get(("Stream 1", "Pressure"), "수신 대기")  # 예: 4.575 barG
+def refresh_display(labels):
+    rows = get_latest_measurements()
+    by_tag = {(m.namespace_uri, m.identifier): m for m in rows}
+
+    for display_id, tag in tag_for_display.items():
+        m = by_tag.get(tag)
+        if m is None:
+            text = "수신 대기"
+        elif m.value is None:
+            text = m.status
+        else:
+            text = f"{m.value} {m.unit}".strip()
+        labels[display_id].text = text
 ```
 
-라벨에는 `pressure_text`를 쓰고, 색상이나 움직임을 계산할 때는 해당 객체의 숫자 `m.value`를 쓴다. 0도 유효한 값이다. 같은 대상·항목에 태그가 여럿이면 [연동 가이드](exts/hd.usda.translator/docs/integration.md)처럼 Namespace URI와 식별자 조합으로 구분한다.
+여기서 `labels`는 화면 ID로 실제 라벨을 찾는 사전이다. 그래픽 확장이 화면을 만들 때 `{"pipe01.pressure": 압력_라벨, "pipe01.temperature": 온도_라벨}`처럼 한 번 준비한다. 그 뒤 1초마다 `refresh_display(labels)`를 호출하면 위 예에서 압력 칸에는 **4.575 barG**, 온도 칸에는 **0.57 degC**가 뜬다.
+
+수신 순서가 바뀌어도 태그 주소로 찾으므로 각 값은 같은 칸에 들어간다. 특정 태그가 빠지면 그 칸은 수신 대기, 행은 있지만 값을 쓸 수 없으면 해당 상태를 표시한다. 숫자 0은 그대로 표시한다. 색상이나 입자 속도를 바꿀 때도 같은 방식으로 태그를 찾아 숫자 `m.value`를 해당 설비의 표현 규칙에 넣는다. [Kit에서 갱신을 시작하고 끝내는 예제](exts/hd.usda.translator/docs/integration.md)
