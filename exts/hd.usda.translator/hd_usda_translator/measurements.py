@@ -23,6 +23,8 @@ class Measurement:
     quality: str = ""
     received_at: str = ""
     number_format: str = "number"
+    namespace_uri: str = ""
+    identifier: str = ""
 
 
 def _interpret_tag(key, sample, stream_fields):
@@ -54,6 +56,9 @@ def current_reading(sample, status, number_format):
     if sample.encoding or value is None:
         return None, unit, "Unavailable"
     if number_format == "raw" and not isinstance(value, float):
+        # USD arrays must not be mutable through a shared measurement.
+        if type(value).__module__ == "pxr.Vt":
+            value = tuple(value)
         return value, unit, "Live"
     if type(value) not in (int, float) or not math.isfinite(value):
         return None, unit, "Unavailable"
@@ -74,17 +79,40 @@ def parse_measurement(snapshot, key, status, stream_fields=_STREAM_FIELDS):
     sample = snapshot.tags.get((snapshot.source, *key)) if snapshot is not None else None
     target, quantity, number_format = _interpret_tag(key, sample, stream_fields)
     if snapshot is None:
-        return Measurement(target, quantity, None, "", "No snapshot")
+        return Measurement(target, quantity, None, "", "No snapshot",
+                           namespace_uri=key[0], identifier=key[1])
     value, unit, state = current_reading(sample, status, number_format)
     return Measurement(
         target, quantity, value, unit, status=state, number_format=number_format,
         quality=sample.quality if sample else "",
         received_at=sample.received_at if sample else "",
+        namespace_uri=key[0], identifier=key[1],
     )
+
+
+def _readings(snapshot, status):
+    for _, uri, identifier in snapshot.tags:
+        yield parse_measurement(snapshot, (uri, identifier), status)
 
 
 def iter_measurements(snapshot, timeout=10):
     """Yield one measurement per stored tag, including its current availability."""
-    status = publication_status(snapshot, timeout)
-    for _, uri, identifier in snapshot.tags:
-        yield parse_measurement(snapshot, (uri, identifier), status)
+    yield from _readings(snapshot, publication_status(snapshot, timeout))
+
+
+_last_snapshot = None
+_last_status = ""
+_latest: tuple[Measurement, ...] = ()
+
+
+def get_latest_measurements() -> tuple[Measurement, ...]:
+    """Return all measurements from the last completed watch cycle, without file I/O."""
+    return _latest
+
+
+def _publish(snapshot, status=""):
+    global _last_snapshot, _last_status, _latest
+    if snapshot is _last_snapshot and status == _last_status:
+        return
+    _latest = tuple(_readings(snapshot, status)) if snapshot is not None else ()
+    _last_snapshot, _last_status = snapshot, status

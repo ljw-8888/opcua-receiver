@@ -10,29 +10,13 @@ from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu
 from omni.kit.viewport.utility import get_active_viewport_window
 from omni.kit.window.filepicker import FilePickerDialog
 
-from .badges import measurement_line
-from .measurements import TAG_DEFAULTS, parse_measurement
+from .measurements import TAG_DEFAULTS, _publish
+from .overlay import ScreenBadge
 from .source_view import SourceWindow
 from .tag_selection import BadgeTags
 from .telemetry import SnapshotFile, publication_status
 
 TITLE = "Live USDA Translator"
-
-
-class ScreenBadge:
-    def __init__(self, fields):
-        self.lines = []
-        with ui.ZStack(height=34 + 22 * len(fields), opaque_for_mouse_events=False):
-            ui.Rectangle(style={"background_color": 0xf52d2520, "border_radius": 5})
-            with ui.HStack():
-                ui.Spacer(width=12)
-                with ui.VStack(spacing=2):
-                    ui.Spacer(height=3)
-                    for _ in fields:
-                        self.lines.append(ui.Label("", height=20, elided_text=True))
-                    self.status = ui.Label("", height=22, alignment=ui.Alignment.RIGHT_CENTER,
-                                           style={"color": 0xffb9c2c3})
-                ui.Spacer(width=12)
 
 
 class TranslatorExtension(omni.ext.IExt):
@@ -97,24 +81,29 @@ class TranslatorExtension(omni.ext.IExt):
     def _monitor(self, file, notice="Select a receiver USDA file."):
         if self._task:
             self._task.cancel()
+        _publish(None)
         self._close_source()
         self._file = file
         self._source_button.enabled = False
         self._tags.update_snapshot(None)
-        if file:
-            self._display(None, self._timeout.as_int, "Reading " + file.path.name, "Reading USDA")
         self._task = asyncio.ensure_future(self._watch(file, self._timeout.as_int, notice))
+        if file:
+            self._display(None, None, "Reading " + file.path.name, "Reading USDA")
 
     async def _watch(self, file, timeout, notice):
         while True:
-            snapshot, detail, idle_status = None, notice, "Waiting for USDA"
+            snapshot, status, detail, idle_status = None, None, notice, "Waiting for USDA"
             if file:
                 try:
                     snapshot = await asyncio.to_thread(file.read)
+                    status = publication_status(snapshot, timeout)
+                    _publish(snapshot, status)
                 except Exception as exc:
+                    snapshot, status = None, None
+                    _publish(None)
                     detail, idle_status = str(exc), "File unavailable"
             try:
-                self._display(snapshot, timeout, detail, idle_status)
+                self._display(snapshot, status, detail, idle_status)
             except Exception as exc:
                 self._tags.update_snapshot(None)
                 self._detach()
@@ -150,7 +139,7 @@ class TranslatorExtension(omni.ext.IExt):
                 ui.Spacer()
             ui.Spacer()
 
-    def _display(self, snapshot, timeout, notice, idle_status):
+    def _display(self, snapshot, status, notice, idle_status):
         self._tags.update_snapshot(snapshot)
         self._source_button.enabled = snapshot is not None
         window = get_active_viewport_window()
@@ -159,20 +148,7 @@ class TranslatorExtension(omni.ext.IExt):
             self._status.text = "Open a viewport to see the badge."
             return
         self._mount(window)
-        status = publication_status(snapshot, timeout) if snapshot else idle_status
-        namespaces = {}
-        for uri, identifier in self._tags.selected.values():
-            namespaces.setdefault(identifier, set()).add(uri)
-        self._badge.status.text = f"USDA: {status}" if snapshot else status
-        for row, line in enumerate(self._badge.lines):
-            key = self._tags.selected[row]
-            measurement = parse_measurement(snapshot, key, status)
-            text = measurement_line(measurement)
-            if len(namespaces[key[1]]) > 1:
-                text += f" [{key[0]}]"
-            if line.text != text:
-                line.text = text
-            line.tooltip = f"{text}\n{key[1]}\n{key[0]}"
+        self._badge.refresh(self._tags.selected, status, idle_status)
         self._status.text = f"{status}  ·  {snapshot.source}" if snapshot else notice
 
     def _detach(self):
@@ -184,6 +160,7 @@ class TranslatorExtension(omni.ext.IExt):
         if self._task:
             self._task.cancel()
             self._task = None
+        _publish(None)
         self._detach()
         self._close_source()
         self._source_button.enabled = False

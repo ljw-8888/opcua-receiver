@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="412" viewBox="0 0 1020 412" role="img" aria-labelledby="title desc">
+  <title id="title">시각화 확장의 1초 갱신</title>
+  <desc id="desc">그래픽팀의 시각화 확장과 내장 오버레이는 같은 함수를 호출한다. 전체 측정값을 받아 시각화 확장은 설비를, 오버레이는 선택한 다섯 줄을 갱신한다.</desc>
+  <rect width="1020" height="412" fill="#ffffff"/>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">
+    <rect x="27" y="16" width="340" height="50" rx="4" fill="#f2f6f3" stroke="#cbd9d1"/>
+    <rect x="653" y="16" width="340" height="50" rx="4" fill="#edf5ef" stroke="#cbd9d1"/>
+    <text x="197" y="48" font-size="23" font-weight="700" text-anchor="middle" fill="#192f2a">Live USDA Translator</text>
+    <text x="823" y="48" font-size="22" font-weight="700" text-anchor="middle" fill="#205f43">오버레이 또는 시각화 확장</text>
+    <line x1="197" y1="66" x2="197" y2="310" stroke="#cbd9d1" stroke-width="2"/>
+    <line x1="823" y1="66" x2="823" y2="310" stroke="#cbd9d1" stroke-width="2"/>
+    <text x="510" y="107" font-size="18" font-weight="400" text-anchor="middle" fill="#486258">1초마다 한 번 호출</text>
+    <text x="510" y="140" font-size="22" font-weight="700" text-anchor="middle" fill="#192f2a" font-family="Consolas, monospace">get_latest_measurements()</text>
+    <line x1="823" y1="158" x2="197" y2="158" stroke="#205f43" stroke-width="2"/>
+    <path d="M205 153l-8 5 8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+    <text x="510" y="211" font-size="22" font-weight="700" text-anchor="middle" fill="#205f43">최근 변환을 마친 전체 목록 반환</text>
+    <line x1="197" y1="228" x2="823" y2="228" stroke="#205f43" stroke-width="2"/>
+    <path d="M815 223l8 5 -8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+    <text x="510" y="268" font-size="20" font-weight="400" text-anchor="middle" fill="#192f2a">Stream 1   /   Pressure   /   4.575   /   barG</text>
+    <rect x="35" y="308" width="323" height="82" rx="4" fill="#f2f6f3"/>
+    <text x="197" y="355" font-size="20" text-anchor="middle" fill="#192f2a">USDA 해석 · 전체 목록 보관</text>
+    <rect x="578" y="308" width="415" height="82" rx="4" fill="#edf5ef"/>
+    <text x="600" y="340" font-size="19" fill="#205f43">내장 오버레이 → 선택한 다섯 줄 갱신</text>
+    <text x="600" y="369" font-size="19" font-weight="700" fill="#205f43">시각화 확장 → 설비별 표현 룰 적용</text>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 [package]
 title = "Live USDA Translator"
 description = "Read measurements from OPC UA receiver USDA files and display selected tags in the viewport."
-version = "0.1.0"
+version = "0.2.0"
 category = "Visualization"
 readme = "docs/README.md"
 

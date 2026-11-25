@@ -1,13 +1,64 @@
-# USDA에서 측정값 읽기
+# 시각화 Extension에서 측정값 받기
 
-수신 파일 한 개에는 서버의 마지막 발행 상태와 태그별 샘플이 들어 있다. 예를 들어 [예제 파일](examples/telemetry.usda)에서 Stream 1 압력의 속성은 다음과 같다.
+Translator가 수신기의 USDA를 읽어 전체 태그를 변환해 둔다. 같은 Kit 앱에서 `get_latest_measurements()`를 호출하면 메모리에 있는 최근 한 회분을 바로 받는다.
 
-```usda
-custom string opcua:identifier = "s=Stream/1/Pressure"
-custom string opcua:namespaceUri = "urn:hd:opcua:test:v1"
-custom string opcua:unit = "barG"
-custom double opcua:value = 4.575
+![시각화 확장이 1초마다 전체 측정값을 요청하고 받은 목록을 화면에 적용하는 과정](measurement-api.svg)
+
+## 오버레이로 확인하기
+
+1. **Window → Live USDA Translator → Open USDA...**에서 수신기가 갱신하는 USDA를 연다. 뷰포트에 다섯 줄짜리 배지가 뜬다.
+2. **Badge tags**에서 첫 줄을 누르고 압력 태그를 고른다. 시험 서버의 `s=Stream/1/Pressure`가 `4.575 barG`이면 첫 줄에 **Stream 1 Pressure: 4.575 barG**가 뜬다.
+3. 다른 줄에 온도를 고르면 두 값을 함께 볼 수 있다. 배지에서 어떤 줄을 바꿔도 시각화 확장이 받는 목록에는 파일의 모든 태그가 들어 있다.
+
+실제 화면 갱신 코드는 [overlay.py의 `ScreenBadge.refresh()`](../hd_usda_translator/overlay.py)에 있다. 한 번 호출해 받은 목록에서 `(namespace_uri, identifier)`로 사용자가 고른 태그를 찾고, 값·단위 또는 상태를 해당 줄에 쓴다. 숫자로 보려면 수신기가 저장 중인 파일을 연다. 함께 제공한 예제 파일은 수신을 종료한 시점이어서 **Stopped**가 뜬다. [배지 화면과 조작 방법](README.md)
+
+## 다른 Kit 확장에서 사용
+
+1. 두 확장을 같은 Kit 앱에 등록한다. 시각화 확장의 `extension.toml`에 아래 의존성을 추가한다.
+2. **Window → Live USDA Translator → Open USDA...**에서 수신기가 갱신하는 파일을 선택한다.
+3. 시각화 확장의 갱신 루프에서 `get_latest_measurements()`를 한 번 호출한다.
+
+```toml
+[dependencies]
+"hd.usda.translator" = { version = "0.2.0" }
 ```
+
+다음은 그래픽팀 화면에 이미 만들어 둔 설비별 라벨을 갱신하는 예다. `labels`에는 `("Stream 1", "Pressure")`처럼 대상과 항목을 키로, 해당 위치의 라벨을 값으로 넣는다.
+
+```python
+import asyncio
+from hd_usda_translator import get_latest_measurements
+
+
+async def update_labels(labels):
+    while True:
+        batch = get_latest_measurements()
+        readings = {(m.target, m.quantity): m for m in batch}
+        for key, label in labels.items():
+            m = readings.get(key)
+            if m is None:
+                label.text = "수신 대기"
+            elif m.value is None:
+                label.text = m.status
+            else:
+                label.text = f"{m.value} {m.unit}".strip()
+        await asyncio.sleep(1)
+```
+
+확장의 `on_startup()`에서 라벨을 만든 뒤 `self.task = asyncio.ensure_future(update_labels(labels))`로 시작하고, `on_shutdown()`에서 `self.task.cancel()`로 끝낸다. 같은 대상과 항목이 실측·시뮬레이션 양쪽에 있으면 두 행의 `(namespace_uri, identifier)`를 매핑에 사용한다. 오버레이도 이 키로 같은 이름의 태그를 구분한다.
+
+## 반환값
+
+정상 수신 중인 한 행의 예는 `Stream 1 / Pressure / 4.575 / barG`다. `target`은 대상, `quantity`는 측정 항목, `value`는 값, `unit`은 단위다. `status`, `quality`, `received_at`도 함께 읽을 수 있다.
+
+| 상황 | 시각화 확장에서 받는 값 |
+|---|---|
+| 정상 수신 | 읽기 전용 튜플에 태그마다 `Measurement` 한 건이 들어 있다. 숫자 `0`도 유효한 값이다. |
+| 다음 갱신 전 | 같은 한 회분을 다시 받는다. 반환 순서에 의존하지 말고 대상과 항목으로 매칭한다. |
+| 수신기가 저장 종료 / 연결 끊김 / 품질 이상 | 해당 행의 `value`는 `None`이며 `status`로 이유를 확인한다. 파일의 발행 시각이 제한 시간을 넘으면 `No update`다. |
+| 파일 선택 전 / 경로 변경 직후 / 읽기 실패 / Translator에서 **Stop** | 빈 튜플 `()`을 받는다. 이전 값을 화면에서 현재값으로 유지하지 않는다. |
+
+한 회분에는 파일에 담긴 태그별 최신값이 들어 있다. 각 태그의 실제 수신 시각은 다를 수 있다. 현장 태그를 어느 설비에 연결할지는 실제 태그 정의를 확인한 뒤 정한다. [현장 태그 적용 가이드](updating-the-parser.md)
 
 ## 저장된 샘플 확인
 
@@ -31,35 +82,3 @@ print(sample.value, sample.unit, sample.quality, sample.state)
 결과는 `4.575 barG Good Stale`다. `Good`은 마지막 수신 당시의 품질이고 `Stale`은 그 값이 더 이상 현재값이 아니라는 뜻이다.
 
 `read_snapshot()`은 `Sdf.Layer.OpenAsAnonymous()`로 USDA를 열고 레이어의 `opcuaFormat`을 확인한다. `/Telemetry`에서 Endpoint와 연결·발행 상태를 읽은 뒤, `/Telemetry/Tags`의 자식 Prim을 `(Endpoint, Namespace URI, 식별자)`로 찾아볼 수 있게 한다. 각 샘플에는 값·단위 외에 표시명, 자료형, 측정 시각과 수신 시각도 들어 있다. 파일을 읽는 코드는 [telemetry.py](../hd_usda_translator/telemetry.py)에 있다.
-
-## 다른 Kit 확장에서 사용
-
-소비하는 확장의 `extension.toml`에 아래 의존성을 추가하고 두 확장을 같은 Kit의 검색 경로에 둔다.
-
-```toml
-[dependencies]
-"hd.usda.translator" = {}
-```
-
-아래 예는 앞에서 읽은 `snapshot`에서 Stream 1 압력을 찾는다. `Measurement`의 네 필드는 대상(`target`), 측정 항목(`quantity`), 값(`value`), 단위(`unit`)다.
-
-```python
-from hd_usda_translator.measurements import iter_measurements
-
-for m in iter_measurements(snapshot, timeout=10):
-    if (m.target, m.quantity) == ("Stream 1", "Pressure"):
-        if m.value is None:
-            print(m.target, m.quantity, m.status)
-        else:
-            print(m.target, m.quantity, m.value, m.unit)
-```
-
-예제 파일에서는 `Stream 1 Pressure Stopped`가 출력된다. 수신 중이면 `value`로 실제 숫자를 받는다. 0은 정상값이며, 수신이 끊기거나 품질이 나쁘면 `value`가 `None`이고 `status`에 사유가 들어 있다. `quality`와 `received_at`도 조회할 수 있다.
-
-계속 갱신되는 파일은 경로마다 `SnapshotFile(path)`을 한 번 만들고 같은 객체의 `read()`를 호출한다. 파일이 교체되면 새 스냅샷을 읽는다. 같은 경로에서 Endpoint가 바뀌면 파일을 다시 열어야 한다. 이 예제의 [_watch()](../hd_usda_translator/extension.py)는 1초마다 파일을 확인한다.
-
-## 태그 선택과 표시
-
-- [태그 선택 창](../hd_usda_translator/tag_selection.py)은 `snapshot.tags`에서 목록을 만들고 줄마다 선택한 Namespace URI와 식별자를 기억한다. 처음 표시할 다섯 태그는 [tags.json](../data/tags.json)에 있다.
-- [측정값 파서](../hd_usda_translator/measurements.py)는 선택한 태그를 대상과 측정 항목으로 해석한다. 액체·기체 분율은 단위와 범위를 확인하고 %로 반환한다.
-- [배지](../hd_usda_translator/badges.py)는 받은 측정값으로 문구를 만든다. [원문 보기](../hd_usda_translator/source_view.py)는 버튼을 누를 때 파일을 한 번 읽어, 같은 발행본 안에서 태그의 속성과 전체 원문을 보여 준다.

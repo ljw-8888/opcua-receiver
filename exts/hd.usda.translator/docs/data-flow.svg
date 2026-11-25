@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="375" viewBox="0 0 1080 375" role="img" aria-labelledby="title desc">
+  <title id="title">OPC UA 시험 서버에서 3D 화면까지</title>
+  <desc id="desc">위에서 아래로 네 구성요소를 읽는다. 시험 서버가 태그를 제공하고 수신기가 USDA를 쓴다. Translator가 측정값 목록을 만들면 시각화 확장이 1초마다 읽어 화면에 적용한다.</desc>
+  <rect width="1080" height="375" fill="#ffffff"/>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">
+    <text x="26" y="30" font-size="17" font-weight="700" text-anchor="start" fill="#486258">구성요소</text>
+    <text x="383" y="30" font-size="17" font-weight="700" text-anchor="start" fill="#486258">입력</text>
+    <text x="722" y="30" font-size="17" font-weight="700" text-anchor="start" fill="#486258">출력</text>
+    <line x1="16" y1="44" x2="1064" y2="44" stroke="#cbd9d1" stroke-width="1"/>
+    <rect x="22" y="59" width="308" height="60" rx="4" fill="#f5f8f5" stroke="none"/>
+    <text x="38" y="85" font-size="22" font-weight="700" text-anchor="start" fill="#192f2a">OPC UA 서버 · 송신기</text>
+    <text x="39" y="108" font-size="16" font-weight="400" text-anchor="start" fill="#486258">시험 서버</text>
+    <text x="383" y="90" font-size="19" font-weight="400" text-anchor="start" fill="#192f2a">HYSYS 기반 시험값</text>
+    <text x="722" y="85" font-size="20" font-weight="700" text-anchor="start" fill="#205f43">OPC UA 태그</text>
+    <text x="722" y="109" font-size="16" font-weight="400" text-anchor="start" fill="#486258">예: s=Stream/1/Pressure</text>
+    <line x1="657" y1="84" x2="692" y2="84" stroke="#205f43" stroke-width="2"/>
+    <path d="M684 79l8 5 -8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+    <line x1="155" y1="119" x2="155" y2="135" stroke="#205f43" stroke-width="2"/>
+    <path d="M150 128l5 7 5 -7" fill="none" stroke="#205f43" stroke-width="2"/>
+    <rect x="22" y="139" width="308" height="60" rx="4" fill="#f5f8f5" stroke="none"/>
+    <text x="38" y="165" font-size="22" font-weight="700" text-anchor="start" fill="#192f2a">OPC UA 수신기</text>
+    <text x="39" y="188" font-size="16" font-weight="400" text-anchor="start" fill="#486258">Windows · Ubuntu · Kit 중 하나</text>
+    <text x="383" y="170" font-size="19" font-weight="400" text-anchor="start" fill="#192f2a">구독한 OPC UA 태그</text>
+    <text x="722" y="165" font-size="20" font-weight="700" text-anchor="start" fill="#205f43">태그별 최신값을 담은 USDA</text>
+    <text x="722" y="189" font-size="16" font-weight="400" text-anchor="start" fill="#486258">값 · 단위 · 품질 · 수신 시각</text>
+    <line x1="657" y1="164" x2="692" y2="164" stroke="#205f43" stroke-width="2"/>
+    <path d="M684 159l8 5 -8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+    <line x1="155" y1="199" x2="155" y2="215" stroke="#205f43" stroke-width="2"/>
+    <path d="M150 208l5 7 5 -7" fill="none" stroke="#205f43" stroke-width="2"/>
+    <rect x="22" y="219" width="308" height="60" rx="4" fill="#f5f8f5" stroke="none"/>
+    <text x="38" y="245" font-size="22" font-weight="700" text-anchor="start" fill="#192f2a">Live USDA Translator</text>
+    <text x="39" y="268" font-size="16" font-weight="400" text-anchor="start" fill="#486258">Kit 확장</text>
+    <text x="383" y="250" font-size="19" font-weight="400" text-anchor="start" fill="#192f2a">수신기가 갱신한 USDA</text>
+    <text x="722" y="245" font-size="20" font-weight="700" text-anchor="start" fill="#205f43">전체 측정값 목록</text>
+    <text x="722" y="269" font-size="16" font-weight="400" text-anchor="start" fill="#486258">예: Stream 1 / Pressure / 4.575 / barG</text>
+    <line x1="657" y1="244" x2="692" y2="244" stroke="#205f43" stroke-width="2"/>
+    <path d="M684 239l8 5 -8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+    <line x1="155" y1="279" x2="155" y2="295" stroke="#205f43" stroke-width="2"/>
+    <path d="M150 288l5 7 5 -7" fill="none" stroke="#205f43" stroke-width="2"/>
+    <rect x="15" y="294" width="1050" height="73" rx="5" fill="#edf5ef" stroke="none"/>
+    <rect x="22" y="299" width="308" height="60" rx="4" fill="#dcece0" stroke="none"/>
+    <text x="38" y="325" font-size="22" font-weight="700" text-anchor="start" fill="#192f2a">공정 데이터 시각화</text>
+    <text x="39" y="348" font-size="16" font-weight="400" text-anchor="start" fill="#486258">그래픽팀이 구현할 Kit 확장</text>
+    <text x="383" y="325" font-size="19" font-weight="400" text-anchor="start" fill="#192f2a">전체 측정값 + 설비별 표현 룰</text>
+    <text x="383" y="349" font-size="16" text-anchor="start" fill="#486258">get_latest_measurements() · 1초 주기</text>
+    <text x="722" y="325" font-size="20" font-weight="700" text-anchor="start" fill="#205f43">Omniverse 3D 화면</text>
+    <text x="722" y="349" font-size="16" font-weight="400" text-anchor="start" fill="#486258">예: 배관의 압력 표시</text>
+    <line x1="657" y1="324" x2="692" y2="324" stroke="#205f43" stroke-width="2"/>
+    <path d="M684 319l8 5 -8 5" fill="none" stroke="#205f43" stroke-width="2"/>
+  </g>
+</svg>

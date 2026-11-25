@@ -1,6 +1,6 @@
 # Live USDA Translator
 
-OPC UA 수신기가 저장한 USDA에서 태그를 골라 뷰포트 중앙에 표시하는 Kit 확장이다. 확장 ID는 `hd.usda.translator`다.
+OPC UA 수신기의 USDA를 읽어 태그별 대상·항목·값·단위를 제공한다. 뷰포트에 뜨는 배지는 그래픽팀이 참고할 수 있는 오버레이 예제다. 1초마다 `get_latest_measurements()`로 전체 목록을 받아 선택한 줄을 갱신한다. [시각화 확장 연동 가이드](integration.md) · [오버레이 코드](../hd_usda_translator/overlay.py)
 
 ## 실행
 

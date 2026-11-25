@@ -1,15 +1,28 @@
-# OPC UA 수신기
+# OPC UA 수신과 Omniverse 시각화 연동
 
-OPC UA 서버에서 태그를 골라 실시간 값과 단위, 품질, 수신 시각을 확인하고 Excel(`.xlsx`) 또는 USD(`.usda`)로 저장한다.
+OPC UA 서버에서 선택한 태그를 받아 USDA에 저장한다. Live USDA Translator는 이 파일을 읽고, 그래픽팀의 Kit 확장에서 사용할 측정값을 제공한다.
 
-```mermaid
-flowchart LR
-    S["OPC UA 시험 서버"] -->|OPC UA| R["수신기<br/>Windows · Ubuntu · Kit"]
-    R -->|USDA 파일| T["Live USDA Translator"]
-    T -->|Measurement| V["룰 기반 표현기<br/>그래픽팀 구현 예정"]
+![시험 서버의 태그를 수신기가 USDA에 저장하고 Translator가 변환한 전체 측정값을 시각화 확장이 읽는 구조](exts/hd.usda.translator/docs/data-flow.svg)
+
+## 시각화 Extension에서 값 받기
+
+Translator의 **Open USDA...**에서 수신기가 갱신하는 파일을 선택한다. 같은 Kit 앱에서 시각화 확장이 1초마다 `get_latest_measurements()`를 한 번 호출하면, 그 파일에 저장된 모든 태그의 최신 측정값을 받는다.
+
+```python
+import asyncio
+from hd_usda_translator import get_latest_measurements
+
+async def update_view(render_frame):
+    while True:
+        render_frame(get_latest_measurements())
+        await asyncio.sleep(1)
 ```
 
-**Live USDA Translator**는 수신 파일의 태그에서 대상·측정 항목·값·단위를 꺼낸다. 예제 배지는 네 항목을 `Stream 1 Pressure: 4.575 barG`처럼 표시한다. 그래픽팀의 Kit 확장에서도 같은 측정값을 사용할 수 있다. [측정값 사용 예제](exts/hd.usda.translator/docs/integration.md#다른-kit-확장에서-사용)
+`render_frame`은 받은 목록을 화면에 반영하는 함수다. 예를 들어 `target="Stream 1"`, `quantity="Pressure"`인 행의 `value=4.575`, `unit="barG"`를 Stream 1 배관의 압력 표시에 쓸 수 있다. 값이 `None`이면 그 행의 `status`를 표시한다.
+
+**실행 예제는 Translator에 들어 있는 뷰포트 오버레이다.** 같은 함수로 전체 목록을 받고, **Badge tags**에서 고른 다섯 줄을 화면에 표시한다. 그래픽팀은 이 자리에서 설비별 표현 룰을 적용하면 된다. [오버레이 실행과 연동 예제](exts/hd.usda.translator/docs/integration.md) · [오버레이 코드](exts/hd.usda.translator/hd_usda_translator/overlay.py)
+
+## 수신기 실행
 
 | 환경 | 설치 방법 |
 |---|---|

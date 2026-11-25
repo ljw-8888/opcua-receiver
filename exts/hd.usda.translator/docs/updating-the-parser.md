@@ -7,7 +7,7 @@
 3. [measurements.py](../hd_usda_translator/measurements.py)의 `_interpret_tag()`에서 실제 태그를 대상과 측정 항목으로 해석한다. 하나의 태그에 여러 값이 들어 있다면 `parse_measurement()`에서 확인된 필드의 값과 단위를 함께 꺼낸다. 첫 화면에 표시할 태그는 [tags.json](../data/tags.json)과 [BadgeTags](../hd_usda_translator/tag_selection.py)에서 설정한다.
 4. 실제 USDA에서 대표 항목을 읽고 원문과 파서 출력을 대조한다. 확인할 항목은 측정 지점, 출처, 값, 단위다. 품질이 나쁘거나 수신이 끊겼을 때에는 `value=None`과 해당 `status`가 반환되는지도 확인한다.
 
-예를 들어 표현기가 Stream 1 압력을 사용한다면 파서는 계속 `target="Stream 1"`, `quantity="Pressure"`로 반환한다. 값과 단위를 사용하는 방법은 [측정값 조회 예제](integration.md#다른-kit-확장에서-사용)에 있다.
+시각화 확장이 `("Stream 1", "Pressure")`로 배관을 찾는다면, 태그 주소가 바뀌어도 변환 결과의 `target`과 `quantity`는 그대로 유지한다. 같은 이름의 행을 구분할 때는 `namespace_uri`와 `identifier`를 함께 쓴다. [오버레이와 시각화 확장의 측정값 조회 예제](integration.md)
 
 **작업 요청 예**
 
