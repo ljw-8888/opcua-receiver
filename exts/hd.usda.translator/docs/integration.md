@@ -6,7 +6,7 @@ Translator가 수신기의 USDA를 읽어 전체 태그를 변환해 둔다. 같
 
 ## 오버레이로 확인하기
 
-1. **Window → Live USDA Translator → Open USDA...**에서 수신기가 갱신하는 USDA를 연다. 뷰포트에 다섯 줄짜리 배지가 뜬다.
+1. **Window → Live USDA Translator**를 열고 `Open USDA...` 버튼으로 수신기가 갱신하는 파일을 고른다. 뷰포트에 다섯 줄짜리 배지가 뜬다.
 2. **Badge tags**에서 첫 줄을 누르고 압력 태그를 고른다. 시험 서버의 `s=Stream/1/Pressure`가 `4.575 barG`이면 첫 줄에 **Stream 1 Pressure: 4.575 barG**가 뜬다.
 3. 다른 줄에 온도를 고르면 두 값을 함께 볼 수 있다. 배지에서 어떤 줄을 바꿔도 시각화 확장이 받는 목록에는 파일의 모든 태그가 들어 있다.
 
@@ -15,7 +15,7 @@ Translator가 수신기의 USDA를 읽어 전체 태그를 변환해 둔다. 같
 ## 다른 Kit 확장에서 사용
 
 1. 두 확장을 같은 Kit 앱에 등록한다. 시각화 확장의 `extension.toml`에 아래 의존성을 추가한다.
-2. **Window → Live USDA Translator → Open USDA...**에서 수신기가 갱신하는 파일을 선택한다.
+2. Translator에서 수신기가 갱신하는 USDA를 열고, 배지에 값이 표시되는지 확인한다.
 3. 시각화 확장의 갱신 루프에서 `get_latest_measurements()`를 한 번 호출한다.
 
 ```toml
@@ -30,22 +30,23 @@ import asyncio
 from hd_usda_translator import get_latest_measurements
 
 
-async def update_labels(labels):
+async def update_labels(labels, key_for=lambda m: (m.target, m.quantity)):
     while True:
-        batch = get_latest_measurements()
-        readings = {(m.target, m.quantity): m for m in batch}
-        for key, label in labels.items():
-            m = readings.get(key)
-            if m is None:
-                label.text = "수신 대기"
-            elif m.value is None:
-                label.text = m.status
+        texts = {}
+        for m in get_latest_measurements():
+            key = key_for(m)
+            if key in texts:
+                texts[key] = "태그 중복"
             else:
-                label.text = f"{m.value} {m.unit}".strip()
+                texts[key] = m.status if m.value is None else f"{m.value} {m.unit}".strip()
+        for key, label in labels.items():
+            label.text = texts.get(key, "수신 대기")
         await asyncio.sleep(1)
 ```
 
-확장의 `on_startup()`에서 라벨을 만든 뒤 `self.task = asyncio.ensure_future(update_labels(labels))`로 시작하고, `on_shutdown()`에서 `self.task.cancel()`로 끝낸다. 같은 대상과 항목이 실측·시뮬레이션 양쪽에 있으면 두 행의 `(namespace_uri, identifier)`를 매핑에 사용한다. 오버레이도 이 키로 같은 이름의 태그를 구분한다.
+확장의 `on_startup()`에서 라벨을 만든 뒤 `self.task = asyncio.ensure_future(update_labels(labels))`로 시작한다. `on_shutdown()`에서는 `self.task.cancel()`로 끝낸다.
+
+실측과 시뮬레이션이 모두 `Stream 1 / Pressure`로 들어오면 예제는 해당 자리에 **태그 중복**을 표시한다. 어느 태그가 실측인지 현장 정의서에서 확인한 뒤, 두 라벨을 각각 `(namespace_uri, identifier)`로 등록하고 `update_labels(labels, key_for=lambda m: (m.namespace_uri, m.identifier))`로 호출한다.
 
 ## 반환값
 
@@ -66,12 +67,11 @@ Kit에서 확장을 켜고 **Window → Script Editor**에서 실행하면 함�
 
 ```python
 from pathlib import Path
-import omni.kit.app
+import hd_usda_translator
 from hd_usda_translator.telemetry import read_snapshot
 
-manager = omni.kit.app.get_app().get_extension_manager()
-ext_id = manager.get_enabled_extension_id("hd.usda.translator")
-path = Path(manager.get_extension_path(ext_id)) / "docs/examples/telemetry.usda"
+extension_dir = Path(hd_usda_translator.__file__).resolve().parents[1]
+path = extension_dir / "docs/examples/telemetry.usda"
 snapshot = read_snapshot(path)
 
 key = (snapshot.source, "urn:hd:opcua:test:v1", "s=Stream/1/Pressure")

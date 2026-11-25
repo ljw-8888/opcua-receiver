@@ -4,7 +4,7 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ## 확장 등록
 
-1. 배포 ZIP의 압축을 풀거나 `git clone https://github.com/ljw-8888/opcua-receiver.git`으로 저장소를 받는다.
+1. [수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)의 압축을 푼다. Translator까지 사용할 때는 `git clone https://github.com/ljw-8888/opcua-receiver.git`으로 두 확장이 들어 있는 저장소를 받는다.
 2. **Window → Extensions**에서 검색 경로에 `exts` 폴더를 추가하고 **OPC UA Receiver**를 켠다.
 3. **OPC UA Settings** 창이 열린다. 닫은 창은 **Window → OPC UA Settings**에서 다시 연다. Kit를 시작할 때마다 사용하려면 **Autoload**를 켠다.
 
@@ -18,7 +18,7 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ## 서버 연결과 태그 선택
 
-**서버 연결** 탭에 사용할 서버의 Endpoint URL을 입력하고 **연결**을 누른다. 아래 화면은 Kit와 같은 컴퓨터에서 시험 서버를 실행한 예다. 인증서나 계정이 필요한 서버는 접속 전에 **보안 및 인증**에서 보안 정책과 인증 방식을 설정한다.
+**서버 연결** 탭에 Endpoint URL을 입력하고 **연결**을 누른다. 공개 시험 주소는 `opc.tcp://218.52.73.150:4840/hd/`다. 캡처에서는 Kit와 같은 컴퓨터에 서버를 띄웠다. 인증서나 계정이 필요한 서버는 접속 전에 **보안 및 인증**에서 보안 정책과 인증 방식을 설정한다.
 
 ![Kit의 보안 및 인증 탭. 시험 서버의 보안 정책은 None, 사용자 인증은 Anonymous다.](security.png)
 
@@ -30,7 +30,7 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ### 태그 주소로 추가하기
 
-**태그 관리**에서 Namespace URI와 NodeId를 입력하고 **등록**을 누른다. 아래 온도의 주소는 `urn:hd:opcua:test:v1`, `s=Stream/1/Temperature`다. 표시명은 `Stream 1 온도`로 지정했고, 단위는 비워 두어 서버가 보낸 `degC`를 쓴다.
+**태그 관리**에서 Namespace URI와 NodeId를 입력하고 **등록**을 누른다. 화면에 보이는 온도의 주소는 `urn:hd:opcua:test:v1`, `s=Stream/1/Temperature`다. 표시명과 단위는 선택 사항이다. 비워 두면 서버에서 조회한 이름과 단위를 쓴다. 단위만 직접 입력해도 숫자는 환산되지 않는다.
 
 위쪽 등록 목록에서 온도를 체크한 뒤 **선택한 등록 태그를 수신 목록에 추가**를 누른다. 아래쪽에 압력과 온도가 함께 보인다. 이번 수신에서 빼려면 아래쪽 체크를 푼다. 위쪽 등록 정보는 서버 주소별로 보관된다.
 
@@ -38,11 +38,11 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ## 실시간 수신과 파일 저장
 
-**서버 연결** 탭의 **수신만 시작**을 누르면 파일을 지정하지 않고도 값·단위·품질·수신 시각을 볼 수 있다. 파일에도 쓰려면 **저장 형식**, **결과 파일**, **저장 주기 (초)**를 정하고 **수신·저장 시작**을 누른다.
+**서버 연결** 탭의 **수신만 시작**을 누르면 파일을 지정하지 않고도 값·단위·품질·수신 시각을 볼 수 있다. 파일에도 쓰려면 **저장 형식**, **결과 파일**, `저장 주기 (초)`를 정하고 **수신·저장 시작**을 누른다.
 
 ### Excel 통합문서
 
-**Excel (.xlsx)**을 고르고 **파일 선택**에서 통합문서를 지정한다. 기본 저장 주기는 5초다. 아래 화면에서는 압력 `4.575 barG`와 온도 `0.57 degC`를 받아 `telemetry.xlsx`에 저장했다. 각 행의 **수신 시각 (UTC)**은 태그 값을 받은 시각이고, 오른쪽 아래 **최근 저장 (UTC)**은 파일을 갱신한 시각이다.
+`Excel (.xlsx)`을 고르고 **파일 선택**에서 통합문서를 지정한다. 기본 저장 주기는 5초다. 아래 화면에서는 압력 `4.575 barG`와 온도 `0.57 degC`를 받아 `telemetry.xlsx`에 저장했다. 각 행의 `수신 시각 (UTC)`은 태그 값을 받은 시각이고, 오른쪽 아래 `최근 저장 (UTC)`은 파일을 갱신한 시각이다.
 
 ![Kit에서 압력과 온도를 구독하며 telemetry.xlsx를 5초 간격으로 저장한 화면](receiving.png)
 
@@ -50,7 +50,7 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ### USDA 데이터 파일
 
-**USD (.usda)**를 고르고 **파일 선택**에서 수신 데이터용 파일을 지정한다. 새 파일을 만들거나 같은 서버의 수신 데이터를 담은 USDA를 다시 사용할 수 있다. **수신·저장 시작**을 누르면 기본 1초마다 태그별 최신값을 기록한다. 설비 모델이 들어 있는 원본 USD는 그대로 두고, 다른 Kit 앱에서 이 데이터 파일을 열어 값을 읽는다.
+`USD (.usda)`를 고르고 **파일 선택**에서 수신 데이터용 파일을 지정한다. 새 파일을 만들거나 같은 서버의 수신 데이터를 담은 USDA를 다시 사용할 수 있다. **수신·저장 시작**을 누르면 기본 1초마다 태그별 최신값을 기록한다. 설비 모델이 들어 있는 원본 USD는 그대로 두고, 다른 Kit 앱에서 이 데이터 파일을 열어 값을 읽는다.
 
 ![Kit의 USDA 저장 설정과 telemetry.usda 저장 완료 상태. 저장 주기는 1초다.](usda.png)
 
@@ -82,22 +82,23 @@ Excel과 USDA 사이를 바꿀 때는 **파일 저장 중지**를 누르고 형�
 
 값이 일정하면 태그의 `receivedAt`은 그대로여도 파일의 `publishedAt`은 저장 주기마다 바뀐다. 수신기가 비정상 종료됐는지 판단할 때는 `publishedAt`을 확인한다.
 
-다른 Kit에서 아래와 같이 데이터 파일을 연다. 이후 파일 변경을 확인한 시점에 `layer.Reload()`를 호출하고 필요한 태그를 다시 읽는다.
+그래픽팀은 **Live USDA Translator**에서 이 파일을 열고 변환된 측정값을 받는다. [Translator 실행](../../hd.usda.translator/docs/README.md#실행) · [시각화 연동 가이드](../../hd.usda.translator/docs/integration.md)
+
+파일 형식을 점검할 때는 Script Editor에서 아래 예제의 경로를 저장한 파일로 바꾼다. 실행할 때마다 디스크에 저장된 한 회분을 읽는다. 저장 종료 후에도 마지막 숫자는 남을 수 있어 발행 여부와 태그 상태를 함께 출력한다.
 
 ```python
-from pxr import Usd
+from pxr import Sdf, Usd
 
-stage = Usd.Stage.Open("/shared/telemetry.usda")
-layer = stage.GetRootLayer()
+stage = Usd.Stage.Open(Sdf.Layer.OpenAsAnonymous("/shared/telemetry.usda"))
 root = stage.GetPrimAtPath("/Telemetry")
+print(root.GetAttribute("opcua:publishing").Get(), root.GetAttribute("opcua:publishedAt").Get())
 for tag in root.GetChild("Tags").GetChildren():
-    if tag.GetAttribute("opcua:sampleState").Get() == "Current":
-        print(tag.GetAttribute("opcua:identifier").Get(),
-              tag.GetAttribute("opcua:value").Get(),
-              tag.GetAttribute("opcua:unit").Get())
+    print(tag.GetAttribute("opcua:identifier").Get(),
+          tag.GetAttribute("opcua:value").Get(), tag.GetAttribute("opcua:unit").Get(),
+          tag.GetAttribute("opcua:sampleState").Get(), tag.GetAttribute("opcua:quality").Get())
 ```
 
-## 기본 GUI 버튼 및 3D 표시와 연결
+## 수신기 설정 창과 원본 구독값 API
 
 설정 버튼을 넣을 확장의 의존성에 `hd.opcua.receiver`를 추가한다. 버튼을 누르면 `show_settings()`가 수신기 창을 연다.
 
@@ -113,7 +114,7 @@ for row in get_latest_samples():
     value, unit, quality = row["value"], row["unit"], row["quality"]
 ```
 
-연결이 끊기거나 수신을 중지하면 `get_latest_samples()`는 빈 목록을 반환한다. 태그와 USD 프림은 이 API를 호출하는 앱에서 연결한다.
+같은 Kit 앱에서 수신기를 직접 사용하는 코드용 API다. 연결이 끊기거나 구독을 중지하면 `get_latest_samples()`는 빈 목록을 반환한다. USDA의 태그를 설비·항목으로 변환한 값은 Translator의 `get_latest_measurements()`에서 받는다.
 
 ## 패키지 유지보수
 

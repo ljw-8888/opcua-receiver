@@ -1,12 +1,64 @@
 # OPC UA 수신과 Omniverse 시각화 연동
 
-OPC UA 서버에서 선택한 태그를 받아 USDA에 저장한다. Live USDA Translator는 이 파일을 읽고, 그래픽팀의 Kit 확장에서 사용할 측정값을 제공한다.
+수신기가 OPC UA 서버에서 태그를 구독해 USDA 파일에 저장한다. Live USDA Translator가 이 파일을 읽으면 시각화 확장은 대상·항목·값·단위를 한 번에 받아 화면에 쓸 수 있다.
 
-![시험 서버의 태그를 수신기가 USDA에 저장하고 Translator가 변환한 전체 측정값을 시각화 확장이 읽는 구조](exts/hd.usda.translator/docs/data-flow.svg)
+![OPC UA 시험 서버, 수신기, Translator, 시각화 확장의 입력과 출력](exts/hd.usda.translator/docs/data-flow.svg)
 
-## 시각화 Extension에서 값 받기
+## 1. 수신기에서 태그를 골라 USDA로 저장하기
 
-Translator의 **Open USDA...**에서 수신기가 갱신하는 파일을 선택한다. 같은 Kit 앱에서 시각화 확장이 1초마다 `get_latest_measurements()`를 한 번 호출하면, 그 파일에 저장된 모든 태그의 최신 측정값을 받는다.
+Windows, Ubuntu, Omniverse Kit 중 데이터를 수신할 환경 하나를 고른다.
+
+### Windows 데스크톱 실행
+
+Windows x64에서 `OPCUA-Receiver.exe`를 내려받아 실행한다. [Windows 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/OPCUA-Receiver.exe)
+
+### Ubuntu 데스크톱 실행
+
+배포 파일을 내려받은 폴더에서 압축을 풀고 실행한다. [Ubuntu x86-64 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)
+
+```bash
+mkdir -p opcua-receiver-app
+tar -xzf OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C opcua-receiver-app
+cd opcua-receiver-app
+./OPCUA-Receiver
+```
+
+앱 메뉴에 등록하려면 같은 폴더에서 `bash install-launcher.sh`를 실행한다.
+
+### Omniverse Kit에서 시작하기
+
+Python 3.12가 내장된 Windows·Linux x86-64 GUI Kit 앱에서 사용한다. [수신기 확장 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)을 풀고 **Window → Extensions**의 검색 경로에 `exts` 폴더를 추가한다. **OPC UA Receiver**를 켜면 설정 창이 열린다.
+
+Translator까지 사용할 때는 아래 명령으로 저장소를 받으면 두 확장이 같은 `exts` 폴더에 들어 있다.
+
+```bash
+git clone https://github.com/ljw-8888/opcua-receiver.git
+```
+
+### 태그 수신과 저장
+
+1. **서버 연결** 탭에 Endpoint URL을 입력하고 **연결**을 누른다. 시험 서버 주소는 `opc.tcp://218.52.73.150:4840/hd/`이며 보안 정책은 `None`, 사용자 인증은 `Anonymous`다. 다른 서버는 운영자가 제공한 주소와 보안 설정을 쓴다.
+2. 연결되면 **서버 항목**에서 그룹을 열어 받을 태그를 체크한다. 시험 서버에서는 **Objects → Telemetry**에서 `Stream/1/Pressure`와 `Stream/1/Temperature`를 고르면 된다. 주소를 이미 알고 있다면 **태그 관리**에서 Namespace URI와 NodeId로 직접 등록하고, 등록한 행을 **수신할 태그 목록**에 추가한다.
+3. **서버 연결** 탭의 **저장 형식**에서 `USD (.usda)`를 고른다. **결과 파일**에 기존 폴더 안의 새 파일명(예: `telemetry.usda`)을 지정하고 **수신·저장 시작**을 누른다. 표에 값·단위·품질이 나오고 저장 성공 시각이 갱신되는지 확인한다.
+
+| 저장 형식 | 기본 주기 | 용도 |
+|---|---|---|
+| USD (`.usda`) | 1초 | Translator에 전달할 태그별 최신값·단위·품질·시각 |
+| Excel (`.xlsx`) | 5초 | 태그별 최신값을 시트에서 확인. **Excel 저장값 보기**로 마지막 저장 내용 확인 |
+
+태그 검색, 직접 등록, 파일 선택은 각 환경의 화면을 참고한다. [Windows·Ubuntu GUI 가이드](opcua-test/receiver-guide.md) · [Kit 수신기 가이드](exts/hd.opcua.receiver/docs/README.md)
+
+## 2. Translator에서 측정값 확인하기
+
+1. 시각화에 사용할 Kit 앱에 **저장소의** `exts` 폴더를 등록하고 **Live USDA Translator**를 켠다. 데스크톱 수신기를 사용했어도 이 단계는 같다.
+2. **Window → Live USDA Translator**를 열고 `Open USDA...` 버튼으로 1단계에서 저장 중인 파일을 고른다. 수신기와 Kit가 다른 PC라면 두 PC에서 접근할 수 있는 공유 폴더에 저장하고 Kit에서도 같은 파일을 연다.
+3. 뷰포트에서 `USDA: Live`와 선택한 배관의 값을 확인한다. **Badge tags**에서 표시할 태그를 바꿀 수 있다. `No tag`가 뜨면 수신기에 저장하도록 선택한 태그와 배지에서 고른 태그가 같은지 확인한다.
+
+시험 서버에 접속할 수 없을 때는 [예제 USDA](exts/hd.usda.translator/docs/examples/telemetry.usda)로 파일 읽기를 확인할 수 있다. 수신 종료 시점에 저장한 파일이므로 배지는 `Stopped`를 표시한다. **View source**에서 Stream 1의 저장된 압력 `4.575 barG`를 확인할 수 있다. [Translator 조작 가이드](exts/hd.usda.translator/docs/README.md) · [현장 태그에 맞게 파서 수정하기](exts/hd.usda.translator/docs/updating-the-parser.md)
+
+## 3. 시각화 확장에서 전체 측정값 받기
+
+같은 Kit 앱에서 실행 중인 시각화 확장은 1초마다 `get_latest_measurements()`를 한 번 호출한다. 배지에서 고른 다섯 줄과 관계없이, 현재 USDA에 저장된 모든 태그의 최근 측정값을 받는다.
 
 ```python
 import asyncio
@@ -18,65 +70,9 @@ async def update_view(render_frame):
         await asyncio.sleep(1)
 ```
 
-`render_frame`은 받은 목록을 화면에 반영하는 함수다. 예를 들어 `target="Stream 1"`, `quantity="Pressure"`인 행의 `value=4.575`, `unit="barG"`를 Stream 1 배관의 압력 표시에 쓸 수 있다. 값이 `None`이면 그 행의 `status`를 표시한다.
+`render_frame`은 그래픽팀의 화면 갱신 함수다. 예를 들어 `target="Stream 1"`, `quantity="Pressure"`인 행의 `value`와 `unit`을 Stream 1 배관에 표시한다. 값이 `None`이면 해당 행의 `status`를 사용하고, 목록이 비면 화면을 수신 대기로 돌린다.
 
-**실행 예제는 Translator에 들어 있는 뷰포트 오버레이다.** 같은 함수로 전체 목록을 받고, **Badge tags**에서 고른 다섯 줄을 화면에 표시한다. 그래픽팀은 이 자리에서 설비별 표현 룰을 적용하면 된다. [오버레이 실행과 연동 예제](exts/hd.usda.translator/docs/integration.md) · [오버레이 코드](exts/hd.usda.translator/hd_usda_translator/overlay.py)
-
-## 수신기 실행
-
-| 환경 | 설치 방법 |
-|---|---|
-| [1. Windows x64](#windows-데스크톱-실행) | 실행 파일을 내려받아 실행 |
-| [2. Ubuntu x86-64](#ubuntu-데스크톱-실행) | 배포 파일의 압축을 풀고 실행 |
-| [3. Omniverse Kit](#omniverse-kit에서-시작하기) | Kit 앱에 확장 폴더를 등록 |
-
-## Windows 데스크톱 실행
-
-`OPCUA-Receiver.exe`를 내려받아 더블클릭한다. [Windows 실행 파일 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver.exe)
-
-## Ubuntu 데스크톱 실행
-
-배포 파일을 내려받은 폴더에서 다음 명령을 실행한다. [Ubuntu 배포 파일 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/latest/download/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)
-
-```bash
-mkdir -p opcua-receiver-app
-tar -xzf OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C opcua-receiver-app
-cd opcua-receiver-app
-./OPCUA-Receiver
-```
-
-앱 메뉴에 등록하려면 같은 폴더에서 `bash install-launcher.sh`를 실행한다.
-
-### [Windows·Ubuntu 수신기 GUI 가이드](opcua-test/receiver-guide.md)
-
-## Omniverse Kit에서 시작하기
-
-Python 3.12가 내장된 x86-64용 USD Composer 또는 GUI Kit 앱에서 사용한다.
-
-1. [Kit 확장 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)의 압축을 풀거나 이 저장소를 복제한다.
-2. Kit의 **Window → Extensions**에서 검색 경로에 `exts` 폴더를 추가하고 **OPC UA Receiver**를 켠다.
-3. 설정 창은 **Window → OPC UA Settings**에서 다시 열 수 있다. Kit 시작 시 자동으로 열려면 **Autoload**를 켠다.
-
-서버 연결과 파일 저장은 씬을 열기 전에도 가능하다.
-
-### [Kit 확장 사용 가이드](exts/hd.opcua.receiver/docs/README.md)
-
-### Live USDA Translator
-
-저장소를 복제한 뒤 같은 `exts` 경로에서 **Live USDA Translator**(`hd.usda.translator`)를 켠다. **Open USDA...**에서 수신 파일을 고르면 빈 씬에서도 배지가 뜬다. 태그를 바꾸거나 **View source**에서 원문을 확인할 수 있다. [배지 사용 가이드](exts/hd.usda.translator/docs/README.md) · [현장 태그에 맞게 파서 수정하기](exts/hd.usda.translator/docs/updating-the-parser.md)
-
-## 태그 수신과 저장
-
-1. **서버 연결** 탭에서 Endpoint URL을 입력하고 **연결**을 누른다. 시험 서버 주소는 `opc.tcp://218.52.73.150:4840/hd/`다.
-2. **서버 항목 → Objects → Telemetry**에서 받을 태그를 체크한다. 다른 서버에서는 해당 설비 그룹을 고른다. 주소를 아는 태그는 **태그 관리**에서 직접 등록할 수 있다.
-3. **저장 형식**과 **결과 파일**을 고르고 **수신·저장 시작**을 누른다. **파일 저장 중지**를 누르면 구독을 유지한 채 파일이나 형식을 바꿀 수 있다.
-
-| 저장 형식 | 기본 주기 | 저장 내용 |
-|---|---|---|
-| Excel (`.xlsx`) | 5초 | 태그별 최신값을 결과 시트에 기록한다. **Excel 저장값 보기**에서 마지막 저장 내용을 확인할 수 있다. |
-| USD (`.usda`) | 1초 | 선택한 태그마다 Prim 하나에 값·단위·품질·시각을 기록한다. 연결이 끊기면 마지막 샘플은 `Stale`로 표시된다. |
-
-세 수신기 모두 같은 USDA 형식을 쓴다. 다른 Kit 앱에서는 이 데이터 파일을 열어 최신값을 읽을 수 있다. [USDA 속성과 읽기 예제](exts/hd.opcua.receiver/docs/README.md#usda-데이터-형식)
+Translator의 뷰포트 오버레이도 같은 함수를 호출한다. 확장 의존성 설정과 갱신 루프를 시작하고 종료하는 예제는 연동 가이드에 있다. [시각화 연동 가이드](exts/hd.usda.translator/docs/integration.md) · [오버레이 코드](exts/hd.usda.translator/hd_usda_translator/overlay.py)
 
 <a id="asyncua-rebuild"></a>
 <a id="테스트와-빌드"></a>
@@ -95,7 +91,7 @@ $python = ".\.venv\Scripts\python.exe"
 & $python receiver_gui.py
 ```
 
-실행 파일을 만들 때는 다음 명령을 사용한다.
+실행한 창을 닫고 아래 명령으로 빌드한다. 릴리스에 첨부된 `asyncua` 소스를 사용할 때는 압축을 푼 폴더를 지정해 먼저 `& $python -m pip install --force-reinstall --no-deps "C:\src\asyncua-2.1.0"`를 실행한다.
 
 ```powershell
 & $python -m pip install PyInstaller==6.22.3
@@ -113,7 +109,7 @@ python3.12 -m venv .venv
 bash run-receiver.sh
 ```
 
-실행 파일과 배포용 압축 파일을 만들려면 다음 명령을 사용한다.
+실행한 창을 닫고 아래 명령으로 빌드한다. 릴리스에 첨부된 `asyncua` 소스를 사용할 때는 압축을 푼 폴더를 지정해 먼저 `.venv/bin/python -m pip install --force-reinstall --no-deps "/path/to/asyncua-2.1.0"`를 실행한다.
 
 ```bash
 .venv/bin/python -m pip install PyInstaller==6.22.3
@@ -123,7 +119,7 @@ tar -czf ../dist/OPCUA-Receiver-Ubuntu-x86_64.tar.gz -C ../dist OPCUA-Receiver -
 
 </details>
 
-`asyncua`를 수정해 빌드하려면 릴리스에 첨부한 `asyncua-2.1.0.tar.gz`의 압축을 풀고, 같은 가상환경에서 `python -m pip install --force-reinstall --no-deps <수정한-소스-폴더>`를 실행한 뒤 다시 빌드한다. GitHub Actions의 **Desktop receiver build**에서도 Windows·Ubuntu 배포본을 만들 수 있다.
+GitHub Actions의 **Desktop receiver build**에서도 Windows·Ubuntu 배포본을 만들 수 있다.
 
 ## 라이선스
 
