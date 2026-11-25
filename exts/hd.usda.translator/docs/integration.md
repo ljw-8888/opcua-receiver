@@ -14,7 +14,7 @@ Translator가 수신기의 USDA를 읽어 전체 태그를 변환해 둔다. 같
 
 ## 다른 Kit 확장에서 사용
 
-1. 두 확장을 같은 Kit 앱에 등록한다. 시각화 확장의 `extension.toml`에 아래 의존성을 추가한다.
+1. 수신기와 Translator를 켜 둔 Kit 앱에 그래픽팀의 시각화 확장을 추가한다. 시각화 확장의 `extension.toml`에 아래 의존성을 넣는다.
 2. Translator에서 수신기가 갱신하는 USDA를 열고, 배지에 값이 표시되는지 확인한다.
 3. 시각화 확장의 갱신 루프에서 `get_latest_measurements()`를 한 번 호출한다.
 

@@ -4,8 +4,8 @@ OPC UA 수신기의 USDA를 읽어 태그별 대상·항목·값·단위를 제�
 
 ## 실행
 
-1. Kit의 **Window → Extensions**에서 저장소의 `exts` 폴더를 검색 경로에 추가하고 **Live USDA Translator**를 켠다. 수신기 ZIP에는 Translator가 들어 있지 않다.
-2. **Window → Live USDA Translator**를 열고 `Open USDA...` 버튼으로 수신기가 저장 중인 파일을 고른다. 다른 PC의 파일은 Kit에서 접근할 수 있도록 공유 폴더를 연결한다. 빈 씬에서도 뷰포트가 열려 있으면 배지가 뜬다. 기본 항목은 Stream 1의 압력, 온도, 유속, 액체·기체 분율이다.
+1. 수신기와 같은 Kit 앱에서 **Live USDA Translator**를 켠다. 처음 설치한다면 두 확장이 들어 있는 저장소를 받아 [Kit 확장 등록 순서](../../../README.md#omniverse-kit에서-시작하기)를 따른다.
+2. **Window → Live USDA Translator**를 열고 `Open USDA...` 버튼으로 수신기가 로컬 디스크에 저장 중인 USDA를 고른다. 빈 씬에서도 뷰포트가 열려 있으면 배지가 뜬다. 기본 항목은 Stream 1의 압력, 온도, 유속, 액체·기체 분율이다.
 3. **Badge tags**에서 바꿀 줄을 누른다. **Find tag**에 표시명, 식별자 또는 Namespace URI를 입력하고 태그를 고른다. **Reset defaults**를 누르면 기본 다섯 항목으로 돌아간다.
 
 ![Stream 2의 압력, Stream 6의 온도, Stream 1의 유속과 분율](stream-badges.png)

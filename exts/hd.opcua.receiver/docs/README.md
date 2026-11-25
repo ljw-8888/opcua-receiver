@@ -4,14 +4,14 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ## 확장 등록
 
-1. [수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)의 압축을 푼다. Translator까지 사용할 때는 `git clone https://github.com/ljw-8888/opcua-receiver.git`으로 두 확장이 들어 있는 저장소를 받는다.
-2. **Window → Extensions**에서 검색 경로에 `exts` 폴더를 추가하고 **OPC UA Receiver**를 켠다.
-3. **OPC UA Settings** 창이 열린다. 닫은 창은 **Window → OPC UA Settings**에서 다시 연다. Kit를 시작할 때마다 사용하려면 **Autoload**를 켠다.
+Kit을 실행할 PC에서 저장소를 복제하고, 같은 Kit 앱에 **OPC UA Receiver**와 **Live USDA Translator**를 등록한다. 검색 경로에 넣을 폴더는 두 확장을 담고 있는 `opcua-receiver/exts`다. 톱니바퀴 메뉴부터 활성화 확인까지는 [README의 Kit 등록 순서](../../../README.md#omniverse-kit에서-시작하기)를 따른다.
 
-터미널에서 실행할 때는 Kit 실행 명령 끝에 다음 옵션을 붙인다. 경로는 압축을 풀거나 저장소를 받은 위치에 맞춘다.
+수신기 설정은 **Window → OPC UA Settings**에서 다시 열 수 있다. 수신기만 개별 설치하려면 [수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)을 풀고 그 안의 `exts`를 등록한다.
+
+터미널에서 **저장소의 두 확장**을 함께 켜려면 GUI Kit 앱 실행 명령 끝에 다음 옵션을 붙인다. 경로는 복제한 저장소의 실제 위치로 바꾼다.
 
 ```text
---ext-folder "/absolute/path/to/opcua-receiver/exts" --enable hd.opcua.receiver
+--ext-folder "/absolute/path/to/opcua-receiver/exts" --enable hd.opcua.receiver --enable hd.usda.translator
 ```
 
 처음 켜면 필요한 Python 패키지를 Kit 캐시에 푼다. 설정 창이 영어로 열리면 **Autoload**를 켜고 Kit를 다시 시작해 한글 글꼴을 불러온다.
@@ -50,7 +50,7 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ### USDA 데이터 파일
 
-`USD (.usda)`를 고르고 **파일 선택**에서 수신 데이터용 파일을 지정한다. 새 파일을 만들거나 같은 서버의 수신 데이터를 담은 USDA를 다시 사용할 수 있다. **수신·저장 시작**을 누르면 기본 1초마다 태그별 최신값을 기록한다. 설비 모델이 들어 있는 원본 USD는 그대로 두고, 다른 Kit 앱에서 이 데이터 파일을 열어 값을 읽는다.
+`USD (.usda)`를 고르고 **파일 선택**에서 수신 데이터용 로컬 파일을 지정한다. 새 파일을 만들거나 같은 서버의 수신 데이터를 담은 USDA를 다시 사용할 수 있다. **수신·저장 시작**을 누르면 기본 1초마다 태그별 최신값을 기록한다. 같은 앱에서 **Window → Live USDA Translator**를 열고 `Open USDA...`로 이 파일을 고른다.
 
 ![Kit의 USDA 저장 설정과 telemetry.usda 저장 완료 상태. 저장 주기는 1초다.](usda.png)
 

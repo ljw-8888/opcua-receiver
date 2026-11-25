@@ -1,6 +1,6 @@
 # Windows·Ubuntu 수신기 GUI 가이드
 
-Windows와 Ubuntu의 조작 방법은 같다. 아래 화면은 Ubuntu에서 시험 서버의 Stream 1 압력과 온도를 수신한 예다. [수신기 다운로드 및 실행](../README.md)
+Windows와 Ubuntu의 조작 방법은 같다. 아래 화면은 Ubuntu에서 시험 서버의 Stream 1 압력과 온도를 수신한 예다. [수신기 다운로드 및 실행](../README.md#데스크톱-수신기-실행)
 
 ## 1. 서버에 연결하고 태그 고르기
 
@@ -54,6 +54,6 @@ Windows와 Ubuntu의 조작 방법은 같다. 아래 화면은 Ubuntu에서 시�
 
 ![USD (.usda)를 선택한 파일 저장 영역. telemetry.usda 저장 완료, 1초 간격, 태그 2개가 표시된다.](guide-images/usda.png)
 
-이 파일을 Kit의 **Live USDA Translator**에서 열면 배지로 압력과 온도를 확인할 수 있다. Kit가 다른 PC에 있으면 두 PC에서 접근할 수 있는 폴더를 사용한다. [Translator에서 파일 열기](../exts/hd.usda.translator/docs/README.md#실행) · [USDA 데이터 형식](../exts/hd.opcua.receiver/docs/README.md#usda-데이터-형식)
+같은 PC에서 Kit의 **Live USDA Translator**를 켜고 이 파일을 열면 배지로 압력과 온도를 확인할 수 있다. [Translator에서 파일 열기](../exts/hd.usda.translator/docs/README.md#실행) · [USDA 데이터 형식](../exts/hd.opcua.receiver/docs/README.md#usda-데이터-형식)
 
 태그를 바꿀 때는 **수신 중지**를 누른 뒤 목록을 고친다. 표에는 마지막 값이 남고 서버 연결은 유지된다. 작업을 마치고 접속을 끊으려면 **연결 해제**를 누른다.
