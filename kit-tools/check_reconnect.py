@@ -201,15 +201,25 @@ async def exercise(directory, suffix):
                 assert before["s=Pressure"]["type"] == "Double" and after["s=Pressure"]["type"] == "Int64"
                 assert before["s=Pressure"]["path"] == after["s=Pressure"]["path"]
                 assert offline["state"] == "Stale" and after["s=Flow"]["state"] == "Current"
-                await session.stop_save()
+                # Kit can cancel the UI action while it waits for the final write.
+                writer = session.writer
+                stop_action = asyncio.create_task(session.stop_save())
+                await asyncio.sleep(0)
+                stop_action.cancel()
+                await asyncio.gather(stop_action, return_exceptions=True)
+                assert stop_action.cancelled()
+                await writer
                 stopped = saved_rows(path)["s=Pressure"]
                 assert not stopped["publishing"] and stopped["state"] == "Stale" and api()["s=Pressure"]["value"] == 200
                 await panel._start(True)
                 await wait_for(lambda: saved_rows(path)["s=Pressure"]["publishing"])
-            await session.disconnect()
-            if suffix == "usda":
+                manager = omni.kit.app.get_app().get_extension_manager()
+                manager.set_extension_enabled_immediate("hd.opcua.receiver", False)
+                await wait_for(lambda: session.writer is None and session.receiver.task.done())
                 stopped = saved_rows(path)["s=Pressure"]
                 assert not stopped["publishing"] and stopped["연결 상태"] == "Disconnected"
+            else:
+                await session.disconnect()
     finally:
         monitor_task.cancel()
         try:

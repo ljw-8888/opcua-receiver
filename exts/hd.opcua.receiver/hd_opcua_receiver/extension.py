@@ -59,6 +59,16 @@ def get_latest_samples():
     return _active.session.snapshot() if _active else []
 
 
+async def _finish_shutdown(tasks, session, excel):
+    # Kit clears the extension's attributes as soon as on_shutdown returns.
+    try:
+        await asyncio.gather(*tasks, return_exceptions=True)
+        await session.disconnect()
+    finally:
+        if excel is not None:
+            await excel.close()
+
+
 class OpcUaExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         global _active
@@ -654,16 +664,12 @@ class OpcUaExtension(omni.ext.IExt):
         _active = None
         ui.Workspace.set_show_window_fn(TITLE, None)
         remove_menu_items(self._menu, "Window")
-        self._refresh.cancel()
+        tasks = [self._refresh]
         if self._job:
-            self._job.cancel()
-        async def cleanup():
-            if self._job:
-                await asyncio.gather(self._job, return_exceptions=True)
-            await self.session.disconnect()
-            if self._excel:
-                await self._excel.close()
-        asyncio.ensure_future(cleanup())
+            tasks.append(self._job)
+        for task in tasks:
+            task.cancel()
+        asyncio.ensure_future(_finish_shutdown(tasks, self.session, self._excel))
         for window in (self._picker, self._preview, self._window):
             if window:
                 window.destroy()

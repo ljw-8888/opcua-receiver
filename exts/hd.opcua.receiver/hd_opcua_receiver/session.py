@@ -282,7 +282,8 @@ class Session:
             self._final_connection = final_connection
             self._stop_save = True
             self._wake_writer.set()
-            await self.writer
+            # Disabling the extension may cancel the UI action waiting for this write.
+            await asyncio.shield(self.writer)
 
     async def pause(self):
         await self.stop_save()
