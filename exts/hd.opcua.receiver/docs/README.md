@@ -4,9 +4,9 @@ USD Composer 등 Python 3.12를 내장한 x86-64용 GUI Kit 앱에서 사용한�
 
 ## 확장 등록
 
-Kit을 실행할 PC에서 저장소를 복제하고, 같은 Kit 앱에 **OPC UA Receiver**와 **Live USDA Translator**를 등록한다. 검색 경로에 넣을 폴더는 두 확장을 담고 있는 `opcua-receiver/exts`다. 톱니바퀴 메뉴부터 활성화 확인까지는 [README의 Kit 등록 순서](../../../README.md#omniverse-kit에서-시작하기)를 따른다.
+Kit을 실행할 PC에서 저장소를 복제하고, 같은 Kit 앱에 **OPC UA Receiver**와 **Live USDA Translator**를 등록한다. 검색 경로에 넣을 폴더는 두 확장을 담고 있는 `opcua-receiver/exts`다. [Kit 확장 등록 순서](https://github.com/ljw-8888/opcua-receiver/blob/v0.3.1/README.md#omniverse-kit에서-시작하기)
 
-수신기 설정은 **Window → OPC UA Settings**에서 다시 열 수 있다. 수신기만 개별 설치하려면 [수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/hd.opcua.receiver-0.3.0.zip)을 풀고 그 안의 `exts`를 등록한다.
+수신기 설정은 **Window → OPC UA Settings**에서 다시 열 수 있다. 수신기만 개별 설치하려면 [Kit 수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.1/hd.opcua.receiver-0.3.1.zip)을 풀고 그 안의 `exts`를 등록한다.
 
 터미널에서 **저장소의 두 확장**을 함께 켜려면 GUI Kit 앱 실행 명령 끝에 다음 옵션을 붙인다. 경로는 복제한 저장소의 실제 위치로 바꾼다.
 
@@ -82,7 +82,7 @@ Excel과 USDA 사이를 바꿀 때는 **파일 저장 중지**를 누르고 형�
 
 값이 일정하면 태그의 `receivedAt`은 그대로여도 파일의 `publishedAt`은 저장 주기마다 바뀐다. 수신기가 비정상 종료됐는지 판단할 때는 `publishedAt`을 확인한다.
 
-그래픽팀은 **Live USDA Translator**에서 이 파일을 열고 변환된 측정값을 받는다. [Translator 실행](../../hd.usda.translator/docs/README.md#실행) · [시각화 연동 가이드](../../hd.usda.translator/docs/integration.md)
+그래픽팀은 **Live USDA Translator**에서 이 파일을 열고 변환된 측정값을 받는다. [Translator 실행](https://github.com/ljw-8888/opcua-receiver/blob/v0.3.1/exts/hd.usda.translator/docs/README.md#실행) · [시각화 연동 가이드](https://github.com/ljw-8888/opcua-receiver/blob/v0.3.1/exts/hd.usda.translator/docs/integration.md)
 
 파일 형식을 점검할 때는 Script Editor에서 아래 예제의 경로를 저장한 파일로 바꾼다. 실행할 때마다 디스크에 저장된 한 회분을 읽는다. 저장 종료 후에도 마지막 숫자는 남을 수 있어 발행 여부와 태그 상태를 함께 출력한다.
 

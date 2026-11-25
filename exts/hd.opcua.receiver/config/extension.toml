@@ -1,7 +1,7 @@
 [package]
 title = "OPC UA Receiver"
 description = "Browse OPC UA servers, select telemetry tags and save live values to Excel or USDA."
-version = "0.3.0"
+version = "0.3.1"
 category = "Visualization"
 readme = "docs/README.md"
 repository = "https://github.com/ljw-8888/opcua-receiver"

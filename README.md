@@ -8,11 +8,11 @@ Windows 또는 Ubuntu에서 수신기를 실행해 서버에 접속하고 태그
 
 ### Windows 데스크톱 실행
 
-Windows x64에서 `OPCUA-Receiver.exe`를 내려받아 실행한다. [Windows 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/OPCUA-Receiver.exe)
+Windows x64에서 `OPCUA-Receiver.exe`를 내려받아 실행한다. [Windows 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.1/OPCUA-Receiver.exe)
 
 ### Ubuntu 데스크톱 실행
 
-배포 파일을 내려받은 폴더에서 압축을 풀고 실행한다. [Ubuntu x86-64 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.0/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)
+배포 파일을 내려받은 폴더에서 압축을 풀고 실행한다. [Ubuntu x86-64 수신기 다운로드](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.1/OPCUA-Receiver-Ubuntu-x86_64.tar.gz)
 
 ```bash
 mkdir -p opcua-receiver-app
@@ -90,6 +90,8 @@ GitHub Actions의 **Desktop receiver build**에서도 Windows·Ubuntu 배포본�
 ### Omniverse Kit에서 시작하기
 
 Kit에서 바로 수신할 때는 아래 절차부터 시작한다. 수신기 확장은 Python 3.12를 내장한 Windows·Linux x86-64용 GUI Kit 앱에서 사용할 수 있다.
+
+수신기만 설치할 때는 [Kit 수신기 ZIP](https://github.com/ljw-8888/opcua-receiver/releases/download/v0.3.1/hd.opcua.receiver-0.3.1.zip)을 풀고 그 안의 `exts`를 등록한다. Translator까지 사용하려면 아래처럼 저장소를 복제한다.
 
 ```bash
 git clone https://github.com/ljw-8888/opcua-receiver.git
